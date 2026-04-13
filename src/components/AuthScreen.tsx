@@ -1,125 +1,142 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { MessageCircle, ArrowLeft, AlertTriangle, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface AuthScreenProps {
-  onLogin: () => void;
   onBack: () => void;
 }
 
-export default function AuthScreen({ onLogin, onBack }: AuthScreenProps) {
-  const [step, setStep] = useState<'phone' | 'otp' | 'profile'>('phone');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
+export default function AuthScreen({ onBack }: AuthScreenProps) {
+  const [step, setStep] = useState<'email' | 'signup' | 'profile'>('email');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handlePhoneSubmit = () => {
-    if (phone.length >= 10) setStep('otp');
+  const handleLogin = async () => {
+    if (!email || !password) return;
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+    }
   };
 
-  const handleOtpSubmit = () => {
-    if (otp.length === 6) setStep('profile');
+  const handleSignUp = async () => {
+    if (!email || !password) return;
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { display_name: name || 'User' },
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Check your email to confirm your account!');
+    }
   };
 
-  const handleProfileSubmit = () => {
-    if (name.trim()) onLogin();
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
+    if (error) toast.error(error.message);
   };
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-12">
-      <button onClick={step === 'phone' ? onBack : () => setStep(step === 'otp' ? 'phone' : 'otp')} className="mb-8 self-start text-muted-foreground">
+      <button onClick={onBack} className="mb-8 self-start text-muted-foreground">
         <ArrowLeft className="h-6 w-6" />
       </button>
 
       <motion.div
-        key={step}
         initial={{ x: 30, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3 }}
         className="flex flex-1 flex-col"
       >
-        {step === 'phone' && (
-          <>
-            <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-              <MessageCircle className="h-8 w-8 text-primary" />
-            </div>
-            <h2 className="mb-2 mt-4 text-2xl font-bold text-foreground">Enter your phone number</h2>
-            <p className="mb-8 text-muted-foreground">We'll send you a verification code</p>
+        <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+          <MessageCircle className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="mb-2 mt-4 text-2xl font-bold text-foreground">
+          {isSignUp ? 'Create your account' : 'Welcome back'}
+        </h2>
+        <p className="mb-8 text-muted-foreground">
+          {isSignUp ? 'Sign up to start messaging' : 'Sign in to continue'}
+        </p>
 
-            <div className="mb-4 flex gap-2">
-              <Input value="+1" readOnly className="w-16 text-center" />
-              <Input
-                value={phone}
-                onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
-                placeholder="Phone number"
-                className="flex-1"
-                type="tel"
-                maxLength={10}
-              />
-            </div>
-
-            <div className="mb-6 flex items-start gap-2 rounded-lg bg-warning/10 p-3">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-              <p className="text-xs text-muted-foreground">
-                <strong className="text-foreground">Important:</strong> Messages on Chief Messenger cannot be erased after sending. What you send, stays seen.
-              </p>
-            </div>
-
-            <Button onClick={handlePhoneSubmit} disabled={phone.length < 10} className="mt-auto mb-8 py-6 text-lg font-bold" size="lg">
-              Send Code
-            </Button>
-          </>
+        {isSignUp && (
+          <Input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Display name"
+            className="mb-3"
+            maxLength={30}
+          />
         )}
 
-        {step === 'otp' && (
-          <>
-            <h2 className="mb-2 text-2xl font-bold text-foreground">Verify your number</h2>
-            <p className="mb-8 text-muted-foreground">Enter the 6-digit code sent to +1{phone}</p>
+        <Input
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="Email address"
+          className="mb-3"
+          type="email"
+        />
 
-            <Input
-              value={otp}
-              onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
-              placeholder="000000"
-              className="mb-4 text-center text-2xl tracking-[0.5em]"
-              maxLength={6}
-            />
+        <Input
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          placeholder="Password"
+          className="mb-4"
+          type="password"
+          minLength={6}
+        />
 
-            <p className="mb-8 text-center text-sm text-muted-foreground">
-              Didn't receive the code? <button className="text-primary font-semibold">Resend</button>
-            </p>
+        <div className="mb-4 flex items-start gap-2 rounded-lg bg-warning/10 p-3">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+          <p className="text-xs text-muted-foreground">
+            <strong className="text-foreground">Important:</strong> Messages on Chief Messenger cannot be erased after sending. What you send, stays seen.
+          </p>
+        </div>
 
-            <Button onClick={handleOtpSubmit} disabled={otp.length < 6} className="mt-auto mb-8 py-6 text-lg font-bold" size="lg">
-              Verify
-            </Button>
-          </>
-        )}
+        <Button
+          onClick={isSignUp ? handleSignUp : handleLogin}
+          disabled={!email || !password || loading}
+          className="py-6 text-lg font-bold"
+          size="lg"
+        >
+          {loading ? 'Please wait...' : isSignUp ? 'Sign Up' : 'Sign In'}
+        </Button>
 
-        {step === 'profile' && (
-          <>
-            <h2 className="mb-2 text-2xl font-bold text-foreground">Create your profile</h2>
-            <p className="mb-8 text-muted-foreground">This is how others will see you</p>
+        <div className="my-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
 
-            <div className="mb-6 flex justify-center">
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary/20 text-3xl font-bold text-primary">
-                {name ? name[0].toUpperCase() : '?'}
-              </div>
-            </div>
+        <Button variant="outline" onClick={handleGoogleLogin} className="py-6 text-base font-semibold" size="lg">
+          <Mail className="mr-2 h-5 w-5" />
+          Continue with Google
+        </Button>
 
-            <Input
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Your name"
-              className="mb-4"
-              maxLength={30}
-            />
-
-            <Button onClick={handleProfileSubmit} disabled={!name.trim()} className="mt-auto mb-8 py-6 text-lg font-bold" size="lg">
-              Continue
-            </Button>
-          </>
-        )}
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+          <button onClick={() => setIsSignUp(!isSignUp)} className="font-semibold text-primary">
+            {isSignUp ? 'Sign In' : 'Sign Up'}
+          </button>
+        </p>
       </motion.div>
     </div>
   );

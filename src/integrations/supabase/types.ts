@@ -14,13 +14,288 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          custom_theme_url: string | null
+          id: string
+          is_pinned: boolean
+          joined_at: string
+          last_read_at: string | null
+          unread_count: number
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          custom_theme_url?: string | null
+          id?: string
+          is_pinned?: boolean
+          joined_at?: string
+          last_read_at?: string | null
+          unread_count?: number
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          custom_theme_url?: string | null
+          id?: string
+          is_pinned?: boolean
+          joined_at?: string
+          last_read_at?: string | null
+          unread_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string | null
+          content_type: string
+          conversation_id: string
+          created_at: string
+          deleted_by_sender: boolean
+          id: string
+          media_url: string | null
+          reply_to_id: string | null
+          sender_id: string
+          status: string
+        }
+        Insert: {
+          content?: string | null
+          content_type?: string
+          conversation_id: string
+          created_at?: string
+          deleted_by_sender?: boolean
+          id?: string
+          media_url?: string | null
+          reply_to_id?: string | null
+          sender_id: string
+          status?: string
+        }
+        Update: {
+          content?: string | null
+          content_type?: string
+          conversation_id?: string
+          created_at?: string
+          deleted_by_sender?: boolean
+          id?: string
+          media_url?: string | null
+          reply_to_id?: string | null
+          sender_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          about: string | null
+          avatar_url: string | null
+          cover_url: string | null
+          created_at: string
+          display_name: string
+          id: string
+          is_online: boolean
+          last_seen: string | null
+          phone: string | null
+          show_last_seen: boolean
+          show_profile_photo: boolean
+          show_read_receipts: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          about?: string | null
+          avatar_url?: string | null
+          cover_url?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_online?: boolean
+          last_seen?: string | null
+          phone?: string | null
+          show_last_seen?: boolean
+          show_profile_photo?: boolean
+          show_read_receipts?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          about?: string | null
+          avatar_url?: string | null
+          cover_url?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_online?: boolean
+          last_seen?: string | null
+          phone?: string | null
+          show_last_seen?: boolean
+          show_profile_photo?: boolean
+          show_read_receipts?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      status_viewers: {
+        Row: {
+          id: string
+          status_id: string
+          viewed_at: string
+          viewer_id: string
+        }
+        Insert: {
+          id?: string
+          status_id: string
+          viewed_at?: string
+          viewer_id: string
+        }
+        Update: {
+          id?: string
+          status_id?: string
+          viewed_at?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "status_viewers_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "statuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      statuses: {
+        Row: {
+          background_color: string | null
+          content: string | null
+          content_type: string
+          created_at: string
+          expires_at: string
+          id: string
+          media_url: string | null
+          privacy: string
+          user_id: string
+        }
+        Insert: {
+          background_color?: string | null
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_url?: string | null
+          privacy?: string
+          user_id: string
+        }
+        Update: {
+          background_color?: string | null
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_url?: string | null
+          privacy?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_conversation_member: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { MessageCircle, Shield, Eye } from 'lucide-react';
+import { Shield, Eye, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import appIcon from '@/assets/app-icon.png';
 
 interface SplashScreenProps {
   onGetStarted: () => void;
@@ -19,9 +20,9 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="mb-8 flex h-28 w-28 items-center justify-center rounded-3xl bg-primary shadow-lg shadow-primary/30"
+        className="mb-8"
       >
-        <MessageCircle className="h-14 w-14 text-primary-foreground" />
+        <img src={appIcon} alt="Chief Messenger" className="h-28 w-28 rounded-3xl shadow-lg shadow-primary/30" width={512} height={512} />
       </motion.div>
 
       <motion.h1
