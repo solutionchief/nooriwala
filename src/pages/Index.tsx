@@ -7,30 +7,63 @@ import StatusScreen from '@/components/StatusScreen';
 import SettingsScreen from '@/components/SettingsScreen';
 import SplashScreen from '@/components/SplashScreen';
 import AuthScreen from '@/components/AuthScreen';
-import { mockConversations, mockStatuses } from '@/data/mockData';
-import type { Conversation } from '@/types/chat';
+import { useAuth } from '@/contexts/AuthContext';
+import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
+import { mockStatuses } from '@/data/mockData';
+import { toast } from 'sonner';
 
-type AppScreen = 'splash' | 'auth' | 'main';
 type Tab = 'chats' | 'status' | 'settings';
 
 export default function Index() {
-  const [screen, setScreen] = useState<AppScreen>('splash');
+  const { isAuthenticated, loading: authLoading, signOut } = useAuth();
+  const [showSplash, setShowSplash] = useState(true);
   const [tab, setTab] = useState<Tab>('chats');
-  const [activeChat, setActiveChat] = useState<Conversation | null>(null);
+  const [activeChat, setActiveChat] = useState<ConversationWithDetails | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { conversations, loading: convsLoading, togglePin, setChatTheme } = useConversations();
 
-  if (screen === 'splash') {
-    return <SplashScreen onGetStarted={() => setScreen('auth')} />;
+  if (showSplash) {
+    return <SplashScreen onGetStarted={() => setShowSplash(false)} />;
   }
 
-  if (screen === 'auth') {
-    return <AuthScreen onLogin={() => setScreen('main')} onBack={() => setScreen('splash')} />;
+  if (!isAuthenticated && !authLoading) {
+    return <AuthScreen onBack={() => setShowSplash(true)} />;
   }
+
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  const handleTogglePin = async (convId: string) => {
+    try {
+      await togglePin(convId);
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  };
+
+  const handleSetTheme = async (convId: string, file: File | null) => {
+    await setChatTheme(convId, file);
+    if (activeChat && activeChat.id === convId) {
+      // Refresh active chat
+      const updated = conversations.find(c => c.id === convId);
+      if (updated) setActiveChat(updated);
+    }
+  };
 
   if (activeChat) {
     return (
       <div className="mx-auto h-screen max-w-lg">
-        <ChatScreen conversation={activeChat} onBack={() => setActiveChat(null)} />
+        <ChatScreen
+          conversation={activeChat}
+          onBack={() => setActiveChat(null)}
+          onTogglePin={handleTogglePin}
+          onSetTheme={handleSetTheme}
+        />
       </div>
     );
   }
@@ -41,11 +74,10 @@ export default function Index() {
     { key: 'settings', icon: Settings, label: 'Settings' },
   ];
 
-  const totalUnread = mockConversations.reduce((sum, c) => sum + c.unread_count, 0);
+  const totalUnread = conversations.reduce((sum, c) => sum + c.unread_count, 0);
 
   return (
     <div className="mx-auto flex h-screen max-w-lg flex-col bg-background">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-border bg-card px-4 py-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -62,7 +94,6 @@ export default function Index() {
         )}
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <AnimatePresence mode="wait">
           <motion.div
@@ -75,19 +106,19 @@ export default function Index() {
           >
             {tab === 'chats' && (
               <ChatList
-                conversations={mockConversations}
+                conversations={conversations}
                 onSelectChat={setActiveChat}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onTogglePin={handleTogglePin}
               />
             )}
             {tab === 'status' && <StatusScreen statuses={mockStatuses} />}
-            {tab === 'settings' && <SettingsScreen onSignOut={() => setScreen('splash')} />}
+            {tab === 'settings' && <SettingsScreen onSignOut={signOut} />}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Bottom Navigation */}
       <div className="border-t border-border bg-card">
         <div className="flex">
           {tabs.map(t => {

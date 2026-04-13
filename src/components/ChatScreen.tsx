@@ -1,15 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, Phone, Video, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ChatList';
-import type { Conversation, Message } from '@/types/chat';
-import { mockMessages, currentUser } from '@/data/mockData';
+import { useMessages } from '@/hooks/useMessages';
+import { useAuth } from '@/contexts/AuthContext';
+import type { ConversationWithDetails } from '@/hooks/useConversations';
 import { formatDistanceToNow } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ChatScreenProps {
-  conversation: Conversation;
+  conversation: ConversationWithDetails;
   onBack: () => void;
+  onTogglePin: (convId: string) => void;
+  onSetTheme: (convId: string, file: File | null) => void;
 }
 
 function MessageStatus({ status }: { status: string }) {
@@ -19,44 +28,32 @@ function MessageStatus({ status }: { status: string }) {
   return <div className="h-2 w-2 animate-pulse-dot rounded-full bg-muted-foreground" />;
 }
 
-export default function ChatScreen({ conversation, onBack }: ChatScreenProps) {
-  const [messages, setMessages] = useState<Message[]>(mockMessages[conversation.id] || []);
+export default function ChatScreen({ conversation, onBack, onTogglePin, onSetTheme }: ChatScreenProps) {
+  const { user } = useAuth();
+  const { messages, loading, sendMessage, deleteForSelf } = useMessages(conversation.id);
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const themeInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
 
-  const sendMessage = () => {
+  const handleSend = () => {
     if (!input.trim()) return;
-    const newMsg: Message = {
-      id: `m-${Date.now()}`,
-      conversation_id: conversation.id,
-      sender_id: 'current-user',
-      content: input.trim(),
-      content_type: 'text',
-      status: 'sent',
-      deleted_by_sender: false,
-      visible_to_receiver: true,
-      reactions: [],
-      created_at: new Date().toISOString(),
-    };
-    setMessages(prev => [...prev, newMsg]);
+    sendMessage(input.trim());
     setInput('');
-
-    // Simulate delivery
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === newMsg.id ? { ...m, status: 'delivered' } : m));
-    }, 1000);
   };
 
-  const { participant } = conversation;
-  const onlineText = participant.is_online
+  const onlineText = conversation.participant_online
     ? 'online'
-    : participant.last_seen
-      ? `last seen ${formatDistanceToNow(new Date(participant.last_seen), { addSuffix: true })}`
+    : conversation.participant_last_seen
+      ? `last seen ${formatDistanceToNow(new Date(conversation.participant_last_seen), { addSuffix: true })}`
       : 'offline';
+
+  const chatBgStyle = conversation.custom_theme_url
+    ? { backgroundImage: `url(${conversation.custom_theme_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {};
 
   return (
     <div className="flex h-full flex-col bg-background">
@@ -65,20 +62,52 @@ export default function ChatScreen({ conversation, onBack }: ChatScreenProps) {
         <button onClick={onBack} className="text-muted-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <Avatar name={participant.display_name} isOnline={participant.is_online} />
+        <Avatar name={conversation.participant_name} isOnline={conversation.participant_online} avatarUrl={conversation.participant_avatar} />
         <div className="flex-1">
-          <p className="font-semibold text-foreground">{participant.display_name}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-semibold text-foreground">{conversation.participant_name}</p>
+            {conversation.is_pinned && <Pin className="h-3 w-3 text-primary rotate-45" />}
+          </div>
           <p className="text-xs text-muted-foreground">{onlineText}</p>
         </div>
-        <button className="p-2 text-muted-foreground"><Phone className="h-5 w-5" /></button>
-        <button className="p-2 text-muted-foreground"><Video className="h-5 w-5" /></button>
-        <button className="p-2 text-muted-foreground"><MoreVertical className="h-5 w-5" /></button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-2 text-muted-foreground"><MoreVertical className="h-5 w-5" /></button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onTogglePin(conversation.id)}>
+              <Pin className="mr-2 h-4 w-4" />
+              {conversation.is_pinned ? 'Unpin Chat' : 'Pin Chat'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => themeInputRef.current?.click()}>
+              <Image className="mr-2 h-4 w-4" />
+              Set Chat Theme
+            </DropdownMenuItem>
+            {conversation.custom_theme_url && (
+              <DropdownMenuItem onClick={() => onSetTheme(conversation.id, null)}>
+                Remove Theme
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <input
+          ref={themeInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={e => {
+            const file = e.target.files?.[0];
+            if (file) onSetTheme(conversation.id, file);
+            e.target.value = '';
+          }}
+        />
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-2">
-        {messages.map((msg, i) => {
-          const isMine = msg.sender_id === 'current-user';
+      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-2" style={chatBgStyle}>
+        {loading && <p className="text-center text-sm text-muted-foreground">Loading...</p>}
+        {messages.map((msg) => {
+          const isMine = msg.sender_id === user?.id;
           const showDeleteNotice = msg.deleted_by_sender && !isMine;
 
           return (
@@ -86,7 +115,7 @@ export default function ChatScreen({ conversation, onBack }: ChatScreenProps) {
               key={msg.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.15 }}
               className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
             >
               <div
@@ -139,12 +168,12 @@ export default function ChatScreen({ conversation, onBack }: ChatScreenProps) {
           <Input
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && sendMessage()}
+            onKeyDown={e => e.key === 'Enter' && handleSend()}
             placeholder="Type a message..."
             className="flex-1 border-none bg-secondary"
           />
           <button
-            onClick={sendMessage}
+            onClick={handleSend}
             disabled={!input.trim()}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-40 transition-opacity"
           >
