@@ -14,34 +14,61 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
           custom_theme_url: string | null
+          disappearing_duration: string | null
           id: string
           is_pinned: boolean
           joined_at: string
           last_read_at: string | null
+          role: string
           unread_count: number
           user_id: string
         }
         Insert: {
           conversation_id: string
           custom_theme_url?: string | null
+          disappearing_duration?: string | null
           id?: string
           is_pinned?: boolean
           joined_at?: string
           last_read_at?: string | null
+          role?: string
           unread_count?: number
           user_id: string
         }
         Update: {
           conversation_id?: string
           custom_theme_url?: string | null
+          disappearing_duration?: string | null
           id?: string
           is_pinned?: boolean
           joined_at?: string
           last_read_at?: string | null
+          role?: string
           unread_count?: number
           user_id?: string
         }
@@ -124,6 +151,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           deleted_by_sender: boolean
+          forwarded_from_id: string | null
           id: string
           media_url: string | null
           reply_to_id: string | null
@@ -136,6 +164,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           deleted_by_sender?: boolean
+          forwarded_from_id?: string | null
           id?: string
           media_url?: string | null
           reply_to_id?: string | null
@@ -148,6 +177,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           deleted_by_sender?: boolean
+          forwarded_from_id?: string | null
           id?: string
           media_url?: string | null
           reply_to_id?: string | null
@@ -160,6 +190,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_forwarded_from_id_fkey"
+            columns: ["forwarded_from_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
           {
@@ -219,6 +256,36 @@ export type Database = {
           show_read_receipts?: boolean
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -286,6 +353,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      typing_indicators: {
+        Row: {
+          conversation_id: string
+          id: string
+          is_typing: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          is_typing?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          is_typing?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

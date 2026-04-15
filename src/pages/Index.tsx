@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, CircleDot, Settings, Plus } from 'lucide-react';
+import { MessageCircle, CircleDot, Settings, Plus, Users } from 'lucide-react';
 import ChatList from '@/components/ChatList';
 import ChatScreen from '@/components/ChatScreen';
 import StatusScreen from '@/components/StatusScreen';
 import SettingsScreen from '@/components/SettingsScreen';
 import SplashScreen from '@/components/SplashScreen';
 import AuthScreen from '@/components/AuthScreen';
+import CreateGroupScreen from '@/components/CreateGroupScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
-import { mockStatuses } from '@/data/mockData';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type Tab = 'chats' | 'status' | 'settings';
 
@@ -20,6 +26,7 @@ export default function Index() {
   const [tab, setTab] = useState<Tab>('chats');
   const [activeChat, setActiveChat] = useState<ConversationWithDetails | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
   const { conversations, loading: convsLoading, togglePin, setChatTheme } = useConversations();
 
   if (showSplash) {
@@ -49,11 +56,25 @@ export default function Index() {
   const handleSetTheme = async (convId: string, file: File | null) => {
     await setChatTheme(convId, file);
     if (activeChat && activeChat.id === convId) {
-      // Refresh active chat
       const updated = conversations.find(c => c.id === convId);
       if (updated) setActiveChat(updated);
     }
   };
+
+  if (showCreateGroup) {
+    return (
+      <div className="mx-auto h-screen max-w-lg">
+        <CreateGroupScreen
+          onBack={() => setShowCreateGroup(false)}
+          onCreated={(convId) => {
+            setShowCreateGroup(false);
+            const conv = conversations.find(c => c.id === convId);
+            if (conv) setActiveChat(conv);
+          }}
+        />
+      </div>
+    );
+  }
 
   if (activeChat) {
     return (
@@ -63,6 +84,7 @@ export default function Index() {
           onBack={() => setActiveChat(null)}
           onTogglePin={handleTogglePin}
           onSetTheme={handleSetTheme}
+          conversations={conversations}
         />
       </div>
     );
@@ -88,9 +110,19 @@ export default function Index() {
           </h1>
         </div>
         {tab === 'chats' && (
-          <button className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Plus className="h-5 w-5" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Plus className="h-5 w-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setShowCreateGroup(true)}>
+                <Users className="mr-2 h-4 w-4" />
+                New Group
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 
@@ -113,7 +145,7 @@ export default function Index() {
                 onTogglePin={handleTogglePin}
               />
             )}
-            {tab === 'status' && <StatusScreen statuses={mockStatuses} />}
+            {tab === 'status' && <StatusScreen />}
             {tab === 'settings' && <SettingsScreen onSignOut={signOut} />}
           </motion.div>
         </AnimatePresence>
