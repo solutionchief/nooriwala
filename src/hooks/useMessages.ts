@@ -12,6 +12,7 @@ export interface MessageData {
   status: string;
   deleted_by_sender: boolean;
   reply_to_id: string | null;
+  forwarded_from_id: string | null;
   created_at: string;
   reactions: { user_id: string; emoji: string }[];
 }
@@ -22,17 +23,15 @@ export function useMessages(conversationId: string) {
   const [loading, setLoading] = useState(true);
 
   const fetchMessages = useCallback(async () => {
-    // Bandwidth optimization: only fetch last 50 messages initially
     const { data: msgs } = await supabase
       .from('messages')
-      .select('id, conversation_id, sender_id, content, content_type, media_url, status, deleted_by_sender, reply_to_id, created_at')
+      .select('id, conversation_id, sender_id, content, content_type, media_url, status, deleted_by_sender, reply_to_id, forwarded_from_id, created_at')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true })
       .limit(50);
 
     if (!msgs) { setMessages([]); setLoading(false); return; }
 
-    // Fetch reactions for these messages
     const msgIds = msgs.map(m => m.id);
     const { data: reactions } = await supabase
       .from('message_reactions')
@@ -55,7 +54,6 @@ export function useMessages(conversationId: string) {
   useEffect(() => {
     fetchMessages();
 
-    // Realtime subscription - only listen for this conversation's messages
     const channel = supabase
       .channel(`messages-${conversationId}`)
       .on('postgres_changes', {
@@ -109,20 +107,9 @@ export function useMessages(conversationId: string) {
       status: 'sent',
     });
   };
-    if (!user) return;
-    await supabase.from('messages').insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      content,
-      content_type: contentType,
-      media_url: mediaUrl || null,
-      status: 'sent',
-    });
-  };
 
   const deleteForSelf = async (messageId: string) => {
     if (!user) return;
-    // Only marks deleted_by_sender = true. Receiver ALWAYS sees the message.
     await supabase
       .from('messages')
       .update({ deleted_by_sender: true })
