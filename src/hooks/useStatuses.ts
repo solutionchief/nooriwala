@@ -125,7 +125,7 @@ export function useStatuses() {
     await supabase.from('status_viewers').insert({
       status_id: statusId,
       viewer_id: user.id,
-    }).onConflict('status_id,viewer_id' as any);
+    });
   };
 
   const deleteStatus = async (statusId: string) => {

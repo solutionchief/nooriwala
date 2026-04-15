@@ -84,7 +84,31 @@ export function useMessages(conversationId: string) {
     return () => { supabase.removeChannel(channel); };
   }, [conversationId, fetchMessages]);
 
-  const sendMessage = async (content: string, contentType = 'text', mediaUrl?: string) => {
+  const sendMessage = async (content: string, contentType = 'text', mediaUrl?: string, replyToId?: string) => {
+    if (!user) return;
+    await supabase.from('messages').insert({
+      conversation_id: conversationId,
+      sender_id: user.id,
+      content,
+      content_type: contentType,
+      media_url: mediaUrl || null,
+      reply_to_id: replyToId || null,
+      status: 'sent',
+    });
+  };
+
+  const forwardMessage = async (msg: MessageData, targetConvId: string) => {
+    if (!user) return;
+    await supabase.from('messages').insert({
+      conversation_id: targetConvId,
+      sender_id: user.id,
+      content: msg.content,
+      content_type: msg.content_type,
+      media_url: msg.media_url,
+      forwarded_from_id: msg.id,
+      status: 'sent',
+    });
+  };
     if (!user) return;
     await supabase.from('messages').insert({
       conversation_id: conversationId,
@@ -116,5 +140,5 @@ export function useMessages(conversationId: string) {
     fetchMessages();
   };
 
-  return { messages, loading, sendMessage, deleteForSelf, addReaction };
+  return { messages, loading, sendMessage, deleteForSelf, addReaction, forwardMessage };
 }

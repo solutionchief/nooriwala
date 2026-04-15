@@ -9,7 +9,7 @@ import SplashScreen from '@/components/SplashScreen';
 import AuthScreen from '@/components/AuthScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
-import { mockStatuses } from '@/data/mockData';
+
 import { toast } from 'sonner';
 
 type Tab = 'chats' | 'status' | 'settings';
