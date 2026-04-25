@@ -26,6 +26,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useQuickReplies } from '@/hooks/useQuickReplies';
+import { useLabels } from '@/hooks/useLabels';
+import { usePendingOutbox } from '@/hooks/useOnlineStatus';
 
 interface ChatScreenProps {
   conversation: ConversationWithDetails;
