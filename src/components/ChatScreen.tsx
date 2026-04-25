@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image, Reply, Forward, Ban, Flag, Clock, X, Users, Tag, WifiOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image, Reply, Forward, Ban, Flag, Clock, X, Users, Tag, WifiOff, Loader2, Phone, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ChatList';
 import { useMessages, type MessageData } from '@/hooks/useMessages';
@@ -29,6 +29,8 @@ import { Button } from '@/components/ui/button';
 import { useQuickReplies } from '@/hooks/useQuickReplies';
 import { useLabels } from '@/hooks/useLabels';
 import { usePendingOutbox } from '@/hooks/useOnlineStatus';
+import { useCalls } from '@/hooks/useCalls';
+import CallScreen from '@/components/CallScreen';
 
 interface ChatScreenProps {
   conversation: ConversationWithDetails;
@@ -52,8 +54,10 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
   const { isBlocked, blockUser, unblockUser, reportUser } = useBlockedUsers();
   const { replies: quickReplies } = useQuickReplies();
   const { labels, labelsForConv, assignLabel, unassignLabel, convLabels } = useLabels();
+  const { startCall } = useCalls();
   const pending = usePendingOutbox(conversation.id);
   const [input, setInput] = useState('');
+  const [activeCall, setActiveCall] = useState<{ id: string; type: 'audio' | 'video' } | null>(null);
   const [replyTo, setReplyTo] = useState<MessageData | null>(null);
   const [forwardMsg, setForwardMsg] = useState<MessageData | null>(null);
   const [showReport, setShowReport] = useState(false);
@@ -164,6 +168,34 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
             {typingUsers.length > 0 ? 'typing...' : onlineText}
           </p>
         </div>
+        {conversation.type !== 'group' && (
+          <>
+            <button
+              onClick={async () => {
+                try {
+                  const c = await startCall(conversation.participant_user_id, 'audio', conversation.id);
+                  if (c) setActiveCall({ id: c.id, type: 'audio' });
+                } catch (e: any) { toast.error(e.message); }
+              }}
+              className="p-2 text-muted-foreground hover:text-primary"
+              aria-label="Voice call"
+            >
+              <Phone className="h-5 w-5" />
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  const c = await startCall(conversation.participant_user_id, 'video', conversation.id);
+                  if (c) setActiveCall({ id: c.id, type: 'video' });
+                } catch (e: any) { toast.error(e.message); }
+              }}
+              className="p-2 text-muted-foreground hover:text-primary"
+              aria-label="Video call"
+            >
+              <Video className="h-5 w-5" />
+            </button>
+          </>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-2 text-muted-foreground"><MoreVertical className="h-5 w-5" /></button>
@@ -438,6 +470,16 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
           </div>
         </DialogContent>
       </Dialog>
+      {activeCall && (
+        <CallScreen
+          callId={activeCall.id}
+          calleeId={conversation.participant_user_id}
+          calleeName={conversation.participant_name}
+          calleeAvatar={conversation.participant_avatar}
+          callType={activeCall.type}
+          onEnd={() => setActiveCall(null)}
+        />
+      )}
     </div>
   );
 }
