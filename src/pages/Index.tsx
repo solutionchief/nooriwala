@@ -27,13 +27,16 @@ type Tab = 'chats' | 'calls' | 'status' | 'settings';
 interface ActiveCall { callId: string; calleeId: string; calleeName: string; calleeAvatar: string | null; callType: 'audio' | 'video'; }
 
 export default function Index() {
-  const { isAuthenticated, loading: authLoading, signOut } = useAuth();
+  const { user, isAuthenticated, loading: authLoading, signOut } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
   const [tab, setTab] = useState<Tab>('chats');
   const [activeChat, setActiveChat] = useState<ConversationWithDetails | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
+  const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
   const { conversations, loading: convsLoading, togglePin, setChatTheme } = useConversations();
+  const { startCall } = useCalls();
 
   if (showSplash) {
     return <SplashScreen onGetStarted={() => setShowSplash(false)} />;
