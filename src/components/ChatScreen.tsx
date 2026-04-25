@@ -29,6 +29,8 @@ import { Button } from '@/components/ui/button';
 import { useQuickReplies } from '@/hooks/useQuickReplies';
 import { useLabels } from '@/hooks/useLabels';
 import { usePendingOutbox } from '@/hooks/useOnlineStatus';
+import { useCalls } from '@/hooks/useCalls';
+import CallScreen from '@/components/CallScreen';
 
 interface ChatScreenProps {
   conversation: ConversationWithDetails;
