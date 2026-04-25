@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image, Reply, Forward, Ban, Flag, Clock, X, Users } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image, Reply, Forward, Ban, Flag, Clock, X, Users, Tag, WifiOff, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ChatList';
 import { useMessages, type MessageData } from '@/hooks/useMessages';
