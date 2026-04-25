@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, CircleDot, Settings, Plus, Users } from 'lucide-react';
+import { MessageCircle, CircleDot, Settings, Plus, Users, Phone, MessageSquarePlus, PhoneCall } from 'lucide-react';
 import ChatList from '@/components/ChatList';
 import ChatScreen from '@/components/ChatScreen';
 import StatusScreen from '@/components/StatusScreen';
@@ -8,8 +8,13 @@ import SettingsScreen from '@/components/SettingsScreen';
 import SplashScreen from '@/components/SplashScreen';
 import AuthScreen from '@/components/AuthScreen';
 import CreateGroupScreen from '@/components/CreateGroupScreen';
+import CallsScreen from '@/components/CallsScreen';
+import CallScreen from '@/components/CallScreen';
+import ContactPicker, { type PickerMode } from '@/components/ContactPicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
+import { useCalls } from '@/hooks/useCalls';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   DropdownMenu,
@@ -18,7 +23,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type Tab = 'chats' | 'status' | 'settings';
+type Tab = 'chats' | 'calls' | 'status' | 'settings';
+interface ActiveCall { callId: string; calleeId: string; calleeName: string; calleeAvatar: string | null; callType: 'audio' | 'video'; }
 
 export default function Index() {
   const { isAuthenticated, loading: authLoading, signOut } = useAuth();
