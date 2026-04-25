@@ -54,8 +54,10 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
   const { isBlocked, blockUser, unblockUser, reportUser } = useBlockedUsers();
   const { replies: quickReplies } = useQuickReplies();
   const { labels, labelsForConv, assignLabel, unassignLabel, convLabels } = useLabels();
+  const { startCall } = useCalls();
   const pending = usePendingOutbox(conversation.id);
   const [input, setInput] = useState('');
+  const [activeCall, setActiveCall] = useState<{ id: string; type: 'audio' | 'video' } | null>(null);
   const [replyTo, setReplyTo] = useState<MessageData | null>(null);
   const [forwardMsg, setForwardMsg] = useState<MessageData | null>(null);
   const [showReport, setShowReport] = useState(false);
