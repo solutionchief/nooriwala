@@ -470,6 +470,16 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
           </div>
         </DialogContent>
       </Dialog>
+      {activeCall && (
+        <CallScreen
+          callId={activeCall.id}
+          calleeId={conversation.participant_user_id}
+          calleeName={conversation.participant_name}
+          calleeAvatar={conversation.participant_avatar}
+          callType={activeCall.type}
+          onEnd={() => setActiveCall(null)}
+        />
+      )}
     </div>
   );
 }
