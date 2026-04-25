@@ -70,6 +70,75 @@ export default function Index() {
     }
   };
 
+  const findOrCreateDirect = async (otherUserId: string): Promise<string | null> => {
+    if (!user) return null;
+    // Find existing direct conversation
+    const existing = conversations.find(c => c.type === 'direct' && c.participant_user_id === otherUserId);
+    if (existing) return existing.id;
+
+    const { data: conv, error } = await supabase
+      .from('conversations')
+      .insert({ type: 'direct', created_by: user.id })
+      .select()
+      .single();
+    if (error || !conv) { toast.error(error?.message || 'Could not start chat'); return null; }
+    const { error: pErr } = await supabase.from('conversation_participants').insert([
+      { conversation_id: conv.id, user_id: user.id },
+      { conversation_id: conv.id, user_id: otherUserId },
+    ]);
+    if (pErr) { toast.error(pErr.message); return null; }
+    return conv.id;
+  };
+
+  const handlePickChat = async (otherId: string) => {
+    const convId = await findOrCreateDirect(otherId);
+    setPickerMode(null);
+    if (!convId) return;
+    // Wait briefly for refetch; fall back to optimistic navigation by id
+    setTimeout(() => {
+      const conv = conversations.find(c => c.id === convId);
+      if (conv) setActiveChat(conv);
+      else toast.success('Chat created — opening from list');
+    }, 400);
+  };
+
+  const handleStartCall = async (otherId: string, name: string, avatar: string | null, type: 'audio' | 'video') => {
+    setPickerMode(null);
+    try {
+      const convId = await findOrCreateDirect(otherId);
+      const call = await startCall(otherId, type, convId || undefined);
+      if (call) setActiveCall({ callId: call.id, calleeId: otherId, calleeName: name, calleeAvatar: avatar, callType: type });
+    } catch (e: any) {
+      toast.error(e.message || 'Could not start call');
+    }
+  };
+
+  if (activeCall) {
+    return (
+      <CallScreen
+        callId={activeCall.callId}
+        calleeId={activeCall.calleeId}
+        calleeName={activeCall.calleeName}
+        calleeAvatar={activeCall.calleeAvatar}
+        callType={activeCall.callType}
+        onEnd={() => setActiveCall(null)}
+      />
+    );
+  }
+
+  if (pickerMode) {
+    return (
+      <div className="mx-auto h-screen max-w-lg">
+        <ContactPicker
+          mode={pickerMode}
+          onBack={() => setPickerMode(null)}
+          onPickChat={handlePickChat}
+          onPickCall={handleStartCall}
+        />
+      </div>
+    );
+  }
+
   if (showCreateGroup) {
     return (
       <div className="mx-auto h-screen max-w-lg">
