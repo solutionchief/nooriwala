@@ -170,11 +170,13 @@ export default function Index() {
 
   const tabs: { key: Tab; icon: typeof MessageCircle; label: string }[] = [
     { key: 'chats', icon: MessageCircle, label: 'Chats' },
+    { key: 'calls', icon: Phone, label: 'Calls' },
     { key: 'status', icon: CircleDot, label: 'Status' },
     { key: 'settings', icon: Settings, label: 'Settings' },
   ];
 
   const totalUnread = conversations.reduce((sum, c) => sum + c.unread_count, 0);
+  const headerTitle = tab === 'chats' ? 'Chief Messenger' : tab === 'calls' ? 'Calls' : tab === 'status' ? 'Status' : 'Settings';
 
   return (
     <div className="mx-auto flex h-screen max-w-lg flex-col bg-background">
@@ -183,18 +185,24 @@ export default function Index() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <MessageCircle className="h-4 w-4 text-primary-foreground" />
           </div>
-          <h1 className="text-xl font-extrabold text-foreground">
-            {tab === 'chats' ? 'Chief Messenger' : tab === 'status' ? 'Status' : 'Settings'}
-          </h1>
+          <h1 className="text-xl font-extrabold text-foreground">{headerTitle}</h1>
         </div>
-        {tab === 'chats' && (
+        {(tab === 'chats' || tab === 'calls') && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <button className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground" aria-label="New">
                 <Plus className="h-5 w-5" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setPickerMode('chat')}>
+                <MessageSquarePlus className="mr-2 h-4 w-4" />
+                New Chat
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPickerMode('call')}>
+                <PhoneCall className="mr-2 h-4 w-4" />
+                New Call
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowCreateGroup(true)}>
                 <Users className="mr-2 h-4 w-4" />
                 New Group
@@ -221,6 +229,11 @@ export default function Index() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 onTogglePin={handleTogglePin}
+              />
+            )}
+            {tab === 'calls' && (
+              <CallsScreen
+                onStartCall={(uid, name, avatar, type) => handleStartCall(uid, name, avatar, type)}
               />
             )}
             {tab === 'status' && <StatusScreen />}
