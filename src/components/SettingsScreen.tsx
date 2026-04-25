@@ -1,8 +1,9 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, CheckCheck, Shield, Lock, ChevronRight, LogOut, Bell, Palette, HelpCircle, Info, User, Camera } from 'lucide-react';
+import { Eye, CheckCheck, Shield, Lock, ChevronRight, LogOut, Bell, Palette, HelpCircle, Info, User, Camera, Briefcase } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
+import BusinessHubScreen from './BusinessHubScreen';
 
 interface SettingsScreenProps {
   onSignOut: () => void;
@@ -12,6 +13,9 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
   const { profile, updateProfile, uploadAvatar, uploadCover } = useProfile();
   const avatarRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
+  const [showBusiness, setShowBusiness] = useState(false);
+
+  if (showBusiness) return <BusinessHubScreen onBack={() => setShowBusiness(false)} />;
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -100,6 +104,19 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
           ))}
         </div>
       </div>
+
+      {/* Business Tools */}
+      <button
+        onClick={() => setShowBusiness(true)}
+        className="flex w-full items-center gap-3 rounded-xl bg-card px-4 py-3.5 transition-colors hover:bg-secondary/50"
+      >
+        <Briefcase className="h-5 w-5 text-primary" />
+        <div className="flex-1 text-left">
+          <p className="font-medium text-foreground">Business Tools</p>
+          <p className="text-xs text-muted-foreground">Profile, catalog, quick replies, labels</p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </button>
 
       {/* General */}
       <div>

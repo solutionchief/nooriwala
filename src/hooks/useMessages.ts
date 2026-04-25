@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { enqueue, flush, isOnline } from '@/lib/outbox';
 
 export interface MessageData {
   id: string;
@@ -84,15 +85,19 @@ export function useMessages(conversationId: string) {
 
   const sendMessage = async (content: string, contentType = 'text', mediaUrl?: string, replyToId?: string) => {
     if (!user) return;
-    await supabase.from('messages').insert({
+    const client_id = `${user.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Always enqueue first — guarantees delivery if connection drops mid-send.
+    await enqueue({
+      client_id,
+      user_id: user.id,
       conversation_id: conversationId,
-      sender_id: user.id,
       content,
       content_type: contentType,
       media_url: mediaUrl || null,
       reply_to_id: replyToId || null,
-      status: 'sent',
+      created_at: new Date().toISOString(),
     });
+    if (isOnline()) flush();
   };
 
   const forwardMessage = async (msg: MessageData, targetConvId: string) => {

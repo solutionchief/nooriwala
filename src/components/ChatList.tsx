@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Pin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import type { ConversationWithDetails } from '@/hooks/useConversations';
 import { formatDistanceToNow } from 'date-fns';
+import { useLabels } from '@/hooks/useLabels';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 interface ChatListProps {
   conversations: ConversationWithDetails[];
@@ -33,13 +36,27 @@ export function Avatar({ name, isOnline, avatarUrl, size = 'md' }: { name: strin
 }
 
 export default function ChatList({ conversations, onSelectChat, searchQuery, onSearchChange, onTogglePin }: ChatListProps) {
-  const filtered = conversations.filter(c =>
-    c.participant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.last_message_content?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { labels, labelsForConv } = useLabels();
+  const online = useOnlineStatus();
+  const [activeLabel, setActiveLabel] = useState<string>('');
+
+  const filtered = conversations.filter(c => {
+    const matchSearch = c.participant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.last_message_content?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchSearch) return false;
+    if (activeLabel) {
+      return labelsForConv(c.id).some(l => l.id === activeLabel);
+    }
+    return true;
+  });
 
   return (
     <div className="flex flex-col">
+      {!online && (
+        <div className="bg-warning/10 border-b border-warning/30 px-4 py-1.5 text-center text-xs text-warning font-medium">
+          You're offline — messages will send when you reconnect
+        </div>
+      )}
       <div className="px-4 py-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -50,6 +67,28 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
             className="pl-10 bg-secondary border-none"
           />
         </div>
+        {labels.length > 0 && (
+          <div className="mt-2 flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+            <button
+              onClick={() => setActiveLabel('')}
+              className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${activeLabel === '' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}
+            >All</button>
+            {labels.map(l => (
+              <button
+                key={l.id}
+                onClick={() => setActiveLabel(l.id === activeLabel ? '' : l.id)}
+                className="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium flex items-center gap-1"
+                style={{
+                  background: activeLabel === l.id ? l.color : `${l.color}25`,
+                  color: activeLabel === l.id ? '#fff' : l.color,
+                }}
+              >
+                <div className="h-1.5 w-1.5 rounded-full" style={{ background: activeLabel === l.id ? '#fff' : l.color }} />
+                {l.name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col">
@@ -87,6 +126,15 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
                   </span>
                 )}
               </div>
+              {labelsForConv(conv.id).length > 0 && (
+                <div className="mt-1 flex gap-1 flex-wrap">
+                  {labelsForConv(conv.id).map(l => (
+                    <span key={l.id} className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: `${l.color}25`, color: l.color }}>
+                      {l.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.button>
         ))}

@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      away_messages: {
+        Row: {
+          away_enabled: boolean
+          away_text: string | null
+          greeting_enabled: boolean
+          greeting_text: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          away_enabled?: boolean
+          away_text?: string | null
+          greeting_enabled?: boolean
+          greeting_text?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          away_enabled?: boolean
+          away_text?: string | null
+          greeting_enabled?: boolean
+          greeting_text?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       blocked_users: {
         Row: {
           blocked_id: string
@@ -34,6 +64,119 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      business_profiles: {
+        Row: {
+          address: string | null
+          business_mode: boolean
+          business_name: string | null
+          category: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          hours: Json | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          updated_at: string
+          user_id: string
+          verified: boolean
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_mode?: boolean
+          business_name?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          hours?: Json | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          updated_at?: string
+          user_id: string
+          verified?: boolean
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_mode?: boolean
+          business_name?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          hours?: Json | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          updated_at?: string
+          user_id?: string
+          verified?: boolean
+          website?: string | null
+        }
+        Relationships: []
+      }
+      chat_labels: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      conversation_labels: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          label_id: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          label_id: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          label_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_labels_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "chat_labels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversation_participants: {
         Row: {
@@ -208,6 +351,116 @@ export type Database = {
           },
         ]
       }
+      outbox_messages: {
+        Row: {
+          client_id: string
+          conversation_id: string
+          id: string
+          queued_at: string
+          sent_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          conversation_id: string
+          id?: string
+          queued_at?: string
+          sent_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          conversation_id?: string
+          id?: string
+          queued_at?: string
+          sent_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      product_collections: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          collection_id: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          images: string[]
+          in_stock: boolean
+          link: string | null
+          name: string
+          price: number
+          sku: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          collection_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          images?: string[]
+          in_stock?: boolean
+          link?: string | null
+          name: string
+          price?: number
+          sku?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          collection_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          images?: string[]
+          in_stock?: boolean
+          link?: string | null
+          name?: string
+          price?: number
+          sku?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "product_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           about: string | null
@@ -255,6 +508,30 @@ export type Database = {
           show_profile_photo?: boolean
           show_read_receipts?: boolean
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quick_replies: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          shortcut: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          shortcut: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          shortcut?: string
           user_id?: string
         }
         Relationships: []

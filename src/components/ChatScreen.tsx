@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image, Reply, Forward, Ban, Flag, Clock, X, Users } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image, Reply, Forward, Ban, Flag, Clock, X, Users, Tag, WifiOff, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ChatList';
 import { useMessages, type MessageData } from '@/hooks/useMessages';
@@ -26,6 +26,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useQuickReplies } from '@/hooks/useQuickReplies';
+import { useLabels } from '@/hooks/useLabels';
+import { usePendingOutbox } from '@/hooks/useOnlineStatus';
 
 interface ChatScreenProps {
   conversation: ConversationWithDetails;
@@ -47,12 +50,16 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
   const { messages, loading, sendMessage, deleteForSelf, addReaction, forwardMessage } = useMessages(conversation.id);
   const { typingUsers, onType, stopTyping } = useTypingIndicator(conversation.id);
   const { isBlocked, blockUser, unblockUser, reportUser } = useBlockedUsers();
+  const { replies: quickReplies } = useQuickReplies();
+  const { labels, labelsForConv, assignLabel, unassignLabel, convLabels } = useLabels();
+  const pending = usePendingOutbox(conversation.id);
   const [input, setInput] = useState('');
   const [replyTo, setReplyTo] = useState<MessageData | null>(null);
   const [forwardMsg, setForwardMsg] = useState<MessageData | null>(null);
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [showDisappearing, setShowDisappearing] = useState(false);
+  const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
   const [emojiMsgId, setEmojiMsgId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -60,6 +67,12 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
   const mediaInputRef = useRef<HTMLInputElement>(null);
 
   const blocked = isBlocked(conversation.participant_user_id);
+  const suggestions = useMemo(() => {
+    if (!input.startsWith('/') || input.length < 2) return [];
+    const q = input.slice(1).toLowerCase();
+    return quickReplies.filter(r => r.shortcut.toLowerCase().startsWith(q)).slice(0, 5);
+  }, [input, quickReplies]);
+  const convChips = labelsForConv(conversation.id);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -172,6 +185,10 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
             <DropdownMenuItem onClick={() => setShowDisappearing(true)}>
               <Clock className="mr-2 h-4 w-4" />
               Disappearing Messages
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowLabelPicker(true)}>
+              <Tag className="mr-2 h-4 w-4" />
+              Manage Labels
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {conversation.type !== 'group' && (
