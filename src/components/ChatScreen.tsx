@@ -168,6 +168,34 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
             {typingUsers.length > 0 ? 'typing...' : onlineText}
           </p>
         </div>
+        {conversation.type !== 'group' && (
+          <>
+            <button
+              onClick={async () => {
+                try {
+                  const c = await startCall(conversation.participant_user_id, 'audio', conversation.id);
+                  if (c) setActiveCall({ id: c.id, type: 'audio' });
+                } catch (e: any) { toast.error(e.message); }
+              }}
+              className="p-2 text-muted-foreground hover:text-primary"
+              aria-label="Voice call"
+            >
+              <Phone className="h-5 w-5" />
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  const c = await startCall(conversation.participant_user_id, 'video', conversation.id);
+                  if (c) setActiveCall({ id: c.id, type: 'video' });
+                } catch (e: any) { toast.error(e.message); }
+              }}
+              className="p-2 text-muted-foreground hover:text-primary"
+              aria-label="Video call"
+            >
+              <Video className="h-5 w-5" />
+            </button>
+          </>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-2 text-muted-foreground"><MoreVertical className="h-5 w-5" /></button>
