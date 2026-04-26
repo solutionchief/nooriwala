@@ -10,10 +10,13 @@ import AuthScreen from '@/components/AuthScreen';
 import CreateGroupScreen from '@/components/CreateGroupScreen';
 import CallsScreen from '@/components/CallsScreen';
 import CallScreen from '@/components/CallScreen';
+import IncomingCallOverlay from '@/components/IncomingCallOverlay';
 import ContactPicker, { type PickerMode } from '@/components/ContactPicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
 import { useCalls } from '@/hooks/useCalls';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { enqueuePendingCall } from '@/lib/callQueue';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
