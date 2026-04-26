@@ -122,6 +122,48 @@ export type Database = {
         }
         Relationships: []
       }
+      call_metrics: {
+        Row: {
+          call_id: string
+          call_type: string
+          connect_ms: number | null
+          created_at: string
+          duration_ms: number | null
+          end_reason: string | null
+          failure_reason: string | null
+          id: string
+          ring_ms: number | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          call_id: string
+          call_type: string
+          connect_ms?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          end_reason?: string | null
+          failure_reason?: string | null
+          id?: string
+          ring_ms?: number | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          call_id?: string
+          call_type?: string
+          connect_ms?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          end_reason?: string | null
+          failure_reason?: string | null
+          id?: string
+          ring_ms?: number | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       call_signals: {
         Row: {
           call_id: string
