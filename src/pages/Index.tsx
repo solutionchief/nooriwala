@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 type Tab = 'chats' | 'calls' | 'status' | 'settings';
-interface ActiveCall { callId: string; calleeId: string; calleeName: string; calleeAvatar: string | null; callType: 'audio' | 'video'; }
+interface ActiveCall { callId: string; calleeId: string; calleeName: string; calleeAvatar: string | null; callType: 'audio' | 'video'; asCallee?: boolean; }
 
 export default function Index() {
   const { user, isAuthenticated, loading: authLoading, signOut } = useAuth();
@@ -39,7 +39,8 @@ export default function Index() {
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
   const { conversations, loading: convsLoading, togglePin, setChatTheme } = useConversations();
-  const { startCall } = useCalls();
+  const { startCall, incomingCall, dismissIncoming, endCall } = useCalls();
+  const online = useOnlineStatus();
 
   if (showSplash) {
     return <SplashScreen onGetStarted={() => setShowSplash(false)} />;
