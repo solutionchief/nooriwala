@@ -200,9 +200,12 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-background to-card">
       {/* Remote video full-screen if active */}
-      {callType === 'video' && state === 'ongoing' && (
-        <video ref={remoteVideoRef} autoPlay playsInline className="absolute inset-0 h-full w-full object-cover" />
-      )}
+      <video
+        ref={remoteVideoRef}
+        autoPlay
+        playsInline
+        className={`absolute inset-0 h-full w-full object-cover ${callType === 'video' && state === 'ongoing' ? '' : 'hidden'}`}
+      />
       <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
 
       {/* Local self-view PiP */}
