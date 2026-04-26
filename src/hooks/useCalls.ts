@@ -18,10 +18,20 @@ export interface CallRecord {
   direction: 'incoming' | 'outgoing';
 }
 
+export interface IncomingCall {
+  callId: string;
+  callerId: string;
+  callerName: string;
+  callerAvatar: string | null;
+  callType: 'audio' | 'video';
+  conversationId: string | null;
+}
+
 export function useCalls() {
   const { user } = useAuth();
   const [calls, setCalls] = useState<CallRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
 
   const fetch = useCallback(async () => {
     if (!user) return;
@@ -64,9 +74,38 @@ export function useCalls() {
     if (!user) return;
     const channel = supabase
       .channel('calls-feed')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'calls' }, () => fetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'calls' }, async (payload) => {
+        // Detect a new incoming ringing call for this user
+        if (payload.eventType === 'INSERT') {
+          const row: any = payload.new;
+          if (row.callee_id === user.id && row.status === 'ringing') {
+            const { data: prof } = await supabase
+              .from('profiles')
+              .select('display_name, avatar_url')
+              .eq('user_id', row.caller_id)
+              .maybeSingle();
+            setIncomingCall({
+              callId: row.id,
+              callerId: row.caller_id,
+              callerName: prof?.display_name || 'Unknown',
+              callerAvatar: prof?.avatar_url || null,
+              callType: row.call_type,
+              conversationId: row.conversation_id,
+            });
+          }
+        }
+        if (payload.eventType === 'UPDATE') {
+          const row: any = payload.new;
+          // If our incoming call was canceled / answered elsewhere, dismiss
+          if (incomingCall && row.id === incomingCall.callId && row.status !== 'ringing') {
+            setIncomingCall(null);
+          }
+        }
+        fetch();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, fetch]);
 
   const startCall = async (calleeId: string, callType: 'audio' | 'video', conversationId?: string) => {
@@ -86,6 +125,10 @@ export function useCalls() {
     return data;
   };
 
+  const updateCallStatus = async (callId: string, status: CallRecord['status']) => {
+    await supabase.from('calls').update({ status }).eq('id', callId);
+  };
+
   const endCall = async (callId: string, status: CallRecord['status'], durationSeconds = 0) => {
     await supabase
       .from('calls')
@@ -93,5 +136,7 @@ export function useCalls() {
       .eq('id', callId);
   };
 
-  return { calls, loading, startCall, endCall, refetch: fetch };
+  const dismissIncoming = () => setIncomingCall(null);
+
+  return { calls, loading, startCall, endCall, updateCallStatus, refetch: fetch, incomingCall, dismissIncoming };
 }
