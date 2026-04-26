@@ -54,11 +54,14 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
         },
         onConnectionState: (s) => {
           if (s === 'connected') {
-            if (state !== 'ongoing') {
-              setState('ongoing');
-              startedAtRef.current = Date.now();
-              updateCallStatus(callId, 'ongoing');
-            }
+            setState((prev) => {
+              if (prev !== 'ongoing') {
+                startedAtRef.current = Date.now();
+                updateCallStatus(callId, 'ongoing');
+                return 'ongoing';
+              }
+              return prev;
+            });
           } else if (s === 'failed' || s === 'disconnected') {
             setState((prev) => (prev === 'ongoing' ? 'ongoing' : 'failed'));
           }
