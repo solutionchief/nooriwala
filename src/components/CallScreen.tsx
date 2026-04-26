@@ -159,8 +159,8 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
     let finalStatus: 'completed' | 'canceled' | 'missed' | 'declined' = overrideStatus ?? 'canceled';
     if (!overrideStatus) {
       if (state === 'ongoing') finalStatus = 'completed';
-      else if (state === 'ringing' && !asCallee) finalStatus = 'canceled';
-      else if (asCallee && state !== 'ongoing') finalStatus = 'declined';
+      else if (asCallee) finalStatus = 'declined';
+      else finalStatus = 'canceled';
     }
     setState('ended');
     await peerRef.current?.destroy(true);
