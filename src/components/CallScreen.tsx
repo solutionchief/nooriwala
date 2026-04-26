@@ -82,6 +82,7 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
             setState((prev) => {
               if (prev !== 'ongoing') {
                 startedAtRef.current = Date.now();
+                if (connectStartRef.current) connectMsRef.current = Date.now() - connectStartRef.current;
                 updateCallStatus(callId, 'ongoing');
                 return 'ongoing';
               }
@@ -95,17 +96,21 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
         onRemoteAccept: () => {
           // Callee accepted — caller now creates offer
           if (!asCallee) {
+            if (ringStartRef.current) ringMsRef.current = Date.now() - ringStartRef.current;
+            connectStartRef.current = Date.now();
             setState('connecting');
             peer.createOffer().catch((e) => {
               console.error(e);
               setState('failed');
               setErrorMsg('Failed to start media exchange.');
+              sendMetric('failed', 'create_offer_error');
             });
           }
         },
         onRemoteDecline: () => {
           setState('ended');
           endCall(callId, 'declined', 0);
+          sendMetric('declined');
           setTimeout(onEnd, 1200);
         },
       },
@@ -125,6 +130,7 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
           ? `No ${isVideo ? 'camera or microphone' : 'microphone'} was found on this device.`
           : `Could not access your ${isVideo ? 'camera or microphone' : 'microphone'}: ${err?.message || 'unknown error'}`
       );
+      sendMetric('failed', err?.name === 'NotAllowedError' ? 'permission_denied' : err?.name === 'NotFoundError' ? 'device_not_found' : 'media_error');
       return;
     }
 
@@ -137,9 +143,13 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
     if (asCallee) {
       // Notify caller we accepted; offer will arrive next
       await peer.sendSignal('accept');
+      connectStartRef.current = Date.now();
+      // Callee's "ring" is the time between mount and accept (effectively negligible here)
+      ringMsRef.current = Date.now() - initAtRef.current;
       setState('connecting');
     } else {
       // Caller: wait for callee to accept (state remains 'ringing'), then offer is created in onRemoteAccept
+      ringStartRef.current = Date.now();
       setState('ringing');
       // Auto-cancel after 45s if no answer
       ringTimeoutRef.current = window.setTimeout(() => {
@@ -174,7 +184,9 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
   const handleRemoteEnd = async () => {
     const duration = startedAtRef.current ? Math.floor((Date.now() - startedAtRef.current) / 1000) : 0;
     setState('ended');
-    await endCall(callId, duration > 0 ? 'completed' : 'canceled', duration);
+    const status = duration > 0 ? 'completed' : 'canceled';
+    await endCall(callId, status, duration);
+    sendMetric(status === 'completed' ? 'completed' : 'remote_canceled');
     await peerRef.current?.destroy(false);
     setTimeout(onEnd, 1200);
   };
@@ -190,6 +202,7 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
     setState('ended');
     await peerRef.current?.destroy(true);
     await endCall(callId, finalStatus, duration);
+    sendMetric(finalStatus);
     setTimeout(onEnd, 800);
   };
 
