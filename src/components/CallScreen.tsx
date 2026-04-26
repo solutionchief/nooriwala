@@ -6,6 +6,7 @@ import { useCalls } from '@/hooks/useCalls';
 import { useAuth } from '@/contexts/AuthContext';
 import { CallPeer } from '@/lib/webrtc';
 import { supabase } from '@/integrations/supabase/client';
+import { recordCallMetric } from '@/lib/callMetrics';
 
 interface CallScreenProps {
   callId: string;
@@ -35,6 +36,30 @@ export default function CallScreen({ callId, calleeId, calleeName, calleeAvatar,
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const startedAtRef = useRef<number | null>(null);
   const ringTimeoutRef = useRef<number | null>(null);
+  // ---- Metrics timing refs ----
+  const initAtRef = useRef<number>(Date.now());
+  const ringStartRef = useRef<number | null>(null);
+  const connectStartRef = useRef<number | null>(null);
+  const ringMsRef = useRef<number | null>(null);
+  const connectMsRef = useRef<number | null>(null);
+  const metricSentRef = useRef(false);
+
+  const sendMetric = (endReason: string, failureReason?: string) => {
+    if (metricSentRef.current || !user) return;
+    metricSentRef.current = true;
+    const duration = startedAtRef.current ? Date.now() - startedAtRef.current : 0;
+    recordCallMetric({
+      callId,
+      userId: user.id,
+      role: asCallee ? 'callee' : 'caller',
+      callType,
+      ringMs: ringMsRef.current ?? undefined,
+      connectMs: connectMsRef.current ?? undefined,
+      durationMs: duration > 0 ? duration : undefined,
+      endReason,
+      failureReason,
+    });
+  };
 
   // ---- Setup peer connection & media ----
   const setup = async () => {
