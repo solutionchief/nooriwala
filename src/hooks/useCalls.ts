@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -32,6 +32,8 @@ export function useCalls() {
   const [calls, setCalls] = useState<CallRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
+  const incomingCallRef = useRef<IncomingCall | null>(null);
+  useEffect(() => { incomingCallRef.current = incomingCall; }, [incomingCall]);
 
   const fetch = useCallback(async () => {
     if (!user) return;
@@ -73,7 +75,7 @@ export function useCalls() {
     fetch();
     if (!user) return;
     const channel = supabase
-      .channel('calls-feed')
+      .channel(`calls-feed-${user.id}-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'calls' }, async (payload) => {
         // Detect a new incoming ringing call for this user
         if (payload.eventType === 'INSERT') {
@@ -97,7 +99,8 @@ export function useCalls() {
         if (payload.eventType === 'UPDATE') {
           const row: any = payload.new;
           // If our incoming call was canceled / answered elsewhere, dismiss
-          if (incomingCall && row.id === incomingCall.callId && row.status !== 'ringing') {
+          const current = incomingCallRef.current;
+          if (current && row.id === current.callId && row.status !== 'ringing') {
             setIncomingCall(null);
           }
         }
