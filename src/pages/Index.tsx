@@ -229,6 +229,7 @@ export default function Index() {
   const headerTitle = tab === 'chats' ? 'Chief Messenger' : tab === 'calls' ? 'Calls' : tab === 'status' ? 'Status' : 'Settings';
 
   return (
+    <>
     <div className="mx-auto flex h-screen max-w-lg flex-col bg-background">
       <div className="flex items-center justify-between border-b border-border bg-card px-4 py-4">
         <div className="flex items-center gap-2">
