@@ -169,43 +169,52 @@ export default function Index() {
 
   if (pickerMode) {
     return (
-      <div className="mx-auto h-screen max-w-lg">
-        <ContactPicker
-          mode={pickerMode}
-          onBack={() => setPickerMode(null)}
-          onPickChat={handlePickChat}
-          onPickCall={handleStartCall}
-        />
-      </div>
+      <>
+        <div className="mx-auto h-screen max-w-lg">
+          <ContactPicker
+            mode={pickerMode}
+            onBack={() => setPickerMode(null)}
+            onPickChat={handlePickChat}
+            onPickCall={handleStartCall}
+          />
+        </div>
+        {incomingOverlay}
+      </>
     );
   }
 
   if (showCreateGroup) {
     return (
-      <div className="mx-auto h-screen max-w-lg">
-        <CreateGroupScreen
-          onBack={() => setShowCreateGroup(false)}
-          onCreated={(convId) => {
-            setShowCreateGroup(false);
-            const conv = conversations.find(c => c.id === convId);
-            if (conv) setActiveChat(conv);
-          }}
-        />
-      </div>
+      <>
+        <div className="mx-auto h-screen max-w-lg">
+          <CreateGroupScreen
+            onBack={() => setShowCreateGroup(false)}
+            onCreated={(convId) => {
+              setShowCreateGroup(false);
+              const conv = conversations.find(c => c.id === convId);
+              if (conv) setActiveChat(conv);
+            }}
+          />
+        </div>
+        {incomingOverlay}
+      </>
     );
   }
 
   if (activeChat) {
     return (
-      <div className="mx-auto h-screen max-w-lg">
-        <ChatScreen
-          conversation={activeChat}
-          onBack={() => setActiveChat(null)}
-          onTogglePin={handleTogglePin}
-          onSetTheme={handleSetTheme}
-          conversations={conversations}
-        />
-      </div>
+      <>
+        <div className="mx-auto h-screen max-w-lg">
+          <ChatScreen
+            conversation={activeChat}
+            onBack={() => setActiveChat(null)}
+            onTogglePin={handleTogglePin}
+            onSetTheme={handleSetTheme}
+            conversations={conversations}
+          />
+        </div>
+        {incomingOverlay}
+      </>
     );
   }
 
