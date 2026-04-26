@@ -10,10 +10,13 @@ import AuthScreen from '@/components/AuthScreen';
 import CreateGroupScreen from '@/components/CreateGroupScreen';
 import CallsScreen from '@/components/CallsScreen';
 import CallScreen from '@/components/CallScreen';
+import IncomingCallOverlay from '@/components/IncomingCallOverlay';
 import ContactPicker, { type PickerMode } from '@/components/ContactPicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
 import { useCalls } from '@/hooks/useCalls';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { enqueuePendingCall } from '@/lib/callQueue';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -24,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 type Tab = 'chats' | 'calls' | 'status' | 'settings';
-interface ActiveCall { callId: string; calleeId: string; calleeName: string; calleeAvatar: string | null; callType: 'audio' | 'video'; }
+interface ActiveCall { callId: string; calleeId: string; calleeName: string; calleeAvatar: string | null; callType: 'audio' | 'video'; asCallee?: boolean; }
 
 export default function Index() {
   const { user, isAuthenticated, loading: authLoading, signOut } = useAuth();
@@ -36,7 +39,8 @@ export default function Index() {
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
   const { conversations, loading: convsLoading, togglePin, setChatTheme } = useConversations();
-  const { startCall } = useCalls();
+  const { startCall, incomingCall, dismissIncoming, endCall } = useCalls();
+  const online = useOnlineStatus();
 
   if (showSplash) {
     return <SplashScreen onGetStarted={() => setShowSplash(false)} />;
@@ -104,6 +108,12 @@ export default function Index() {
 
   const handleStartCall = async (otherId: string, name: string, avatar: string | null, type: 'audio' | 'video') => {
     setPickerMode(null);
+    if (!online) {
+      enqueuePendingCall({ calleeId: otherId, calleeName: name, calleeAvatar: avatar, callType: type });
+      toast.info('You are offline — call queued and will retry when online');
+      setTab('calls');
+      return;
+    }
     try {
       const convId = await findOrCreateDirect(otherId);
       const call = await startCall(otherId, type, convId || undefined);
@@ -111,6 +121,32 @@ export default function Index() {
     } catch (e: any) {
       toast.error(e.message || 'Could not start call');
     }
+  };
+
+  const handleAcceptIncoming = () => {
+    if (!incomingCall) return;
+    setActiveCall({
+      callId: incomingCall.callId,
+      calleeId: incomingCall.callerId,
+      calleeName: incomingCall.callerName,
+      calleeAvatar: incomingCall.callerAvatar,
+      callType: incomingCall.callType,
+      asCallee: true,
+    });
+    dismissIncoming();
+  };
+
+  const handleDeclineIncoming = async () => {
+    if (!incomingCall || !user) return;
+    try {
+      await supabase.from('call_signals').insert({
+        call_id: incomingCall.callId,
+        sender_id: user.id,
+        signal_type: 'decline',
+      });
+      await endCall(incomingCall.callId, 'declined', 0);
+    } catch (e) { console.error(e); }
+    dismissIncoming();
   };
 
   if (activeCall) {
@@ -121,50 +157,64 @@ export default function Index() {
         calleeName={activeCall.calleeName}
         calleeAvatar={activeCall.calleeAvatar}
         callType={activeCall.callType}
+        asCallee={activeCall.asCallee}
         onEnd={() => setActiveCall(null)}
       />
     );
   }
 
+  const incomingOverlay = incomingCall ? (
+    <IncomingCallOverlay call={incomingCall} onAccept={handleAcceptIncoming} onDecline={handleDeclineIncoming} />
+  ) : null;
+
   if (pickerMode) {
     return (
-      <div className="mx-auto h-screen max-w-lg">
-        <ContactPicker
-          mode={pickerMode}
-          onBack={() => setPickerMode(null)}
-          onPickChat={handlePickChat}
-          onPickCall={handleStartCall}
-        />
-      </div>
+      <>
+        <div className="mx-auto h-screen max-w-lg">
+          <ContactPicker
+            mode={pickerMode}
+            onBack={() => setPickerMode(null)}
+            onPickChat={handlePickChat}
+            onPickCall={handleStartCall}
+          />
+        </div>
+        {incomingOverlay}
+      </>
     );
   }
 
   if (showCreateGroup) {
     return (
-      <div className="mx-auto h-screen max-w-lg">
-        <CreateGroupScreen
-          onBack={() => setShowCreateGroup(false)}
-          onCreated={(convId) => {
-            setShowCreateGroup(false);
-            const conv = conversations.find(c => c.id === convId);
-            if (conv) setActiveChat(conv);
-          }}
-        />
-      </div>
+      <>
+        <div className="mx-auto h-screen max-w-lg">
+          <CreateGroupScreen
+            onBack={() => setShowCreateGroup(false)}
+            onCreated={(convId) => {
+              setShowCreateGroup(false);
+              const conv = conversations.find(c => c.id === convId);
+              if (conv) setActiveChat(conv);
+            }}
+          />
+        </div>
+        {incomingOverlay}
+      </>
     );
   }
 
   if (activeChat) {
     return (
-      <div className="mx-auto h-screen max-w-lg">
-        <ChatScreen
-          conversation={activeChat}
-          onBack={() => setActiveChat(null)}
-          onTogglePin={handleTogglePin}
-          onSetTheme={handleSetTheme}
-          conversations={conversations}
-        />
-      </div>
+      <>
+        <div className="mx-auto h-screen max-w-lg">
+          <ChatScreen
+            conversation={activeChat}
+            onBack={() => setActiveChat(null)}
+            onTogglePin={handleTogglePin}
+            onSetTheme={handleSetTheme}
+            conversations={conversations}
+          />
+        </div>
+        {incomingOverlay}
+      </>
     );
   }
 
@@ -179,6 +229,7 @@ export default function Index() {
   const headerTitle = tab === 'chats' ? 'Chief Messenger' : tab === 'calls' ? 'Calls' : tab === 'status' ? 'Status' : 'Settings';
 
   return (
+    <>
     <div className="mx-auto flex h-screen max-w-lg flex-col bg-background">
       <div className="flex items-center justify-between border-b border-border bg-card px-4 py-4">
         <div className="flex items-center gap-2">
@@ -275,5 +326,7 @@ export default function Index() {
         </div>
       </div>
     </div>
+    {incomingOverlay}
+    </>
   );
 }
