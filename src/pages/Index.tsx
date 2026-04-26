@@ -108,6 +108,12 @@ export default function Index() {
 
   const handleStartCall = async (otherId: string, name: string, avatar: string | null, type: 'audio' | 'video') => {
     setPickerMode(null);
+    if (!online) {
+      enqueuePendingCall({ calleeId: otherId, calleeName: name, calleeAvatar: avatar, callType: type });
+      toast.info('You are offline — call queued and will retry when online');
+      setTab('calls');
+      return;
+    }
     try {
       const convId = await findOrCreateDirect(otherId);
       const call = await startCall(otherId, type, convId || undefined);
@@ -115,6 +121,32 @@ export default function Index() {
     } catch (e: any) {
       toast.error(e.message || 'Could not start call');
     }
+  };
+
+  const handleAcceptIncoming = () => {
+    if (!incomingCall) return;
+    setActiveCall({
+      callId: incomingCall.callId,
+      calleeId: incomingCall.callerId,
+      calleeName: incomingCall.callerName,
+      calleeAvatar: incomingCall.callerAvatar,
+      callType: incomingCall.callType,
+      asCallee: true,
+    });
+    dismissIncoming();
+  };
+
+  const handleDeclineIncoming = async () => {
+    if (!incomingCall || !user) return;
+    try {
+      await supabase.from('call_signals').insert({
+        call_id: incomingCall.callId,
+        sender_id: user.id,
+        signal_type: 'decline',
+      });
+      await endCall(incomingCall.callId, 'declined', 0);
+    } catch (e) { console.error(e); }
+    dismissIncoming();
   };
 
   if (activeCall) {
@@ -125,10 +157,15 @@ export default function Index() {
         calleeName={activeCall.calleeName}
         calleeAvatar={activeCall.calleeAvatar}
         callType={activeCall.callType}
+        asCallee={activeCall.asCallee}
         onEnd={() => setActiveCall(null)}
       />
     );
   }
+
+  const incomingOverlay = incomingCall ? (
+    <IncomingCallOverlay call={incomingCall} onAccept={handleAcceptIncoming} onDecline={handleDeclineIncoming} />
+  ) : null;
 
   if (pickerMode) {
     return (
