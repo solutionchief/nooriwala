@@ -15,6 +15,7 @@ export interface ConversationWithDetails {
   is_pinned: boolean;
   custom_theme_url: string | null;
   unread_count: number;
+  is_archived: boolean;
   last_message_content: string | null;
   last_message_time: string | null;
   last_message_sender: string | null;
@@ -32,7 +33,7 @@ export function useConversations() {
     // Get user's conversation participations
     const { data: participations } = await supabase
       .from('conversation_participants')
-      .select('conversation_id, is_pinned, custom_theme_url, unread_count')
+      .select('conversation_id, is_pinned, custom_theme_url, unread_count, is_archived')
       .eq('user_id', user.id);
 
     if (!participations?.length) { setConversations([]); setLoading(false); return; }
@@ -95,6 +96,7 @@ export function useConversations() {
         is_pinned: part.is_pinned,
         custom_theme_url: part.custom_theme_url,
         unread_count: part.unread_count,
+        is_archived: (part as any).is_archived ?? false,
         last_message_content: lastMsg?.content || null,
         last_message_time: lastMsg?.created_at || conv.updated_at,
         last_message_sender: lastMsg?.sender_id || null,
@@ -207,5 +209,17 @@ export function useConversations() {
     return null;
   };
 
-  return { conversations, loading, fetchConversations, togglePin, setChatTheme, createConversation };
+  const toggleArchive = async (conversationId: string) => {
+    if (!user) return;
+    const conv = conversations.find(c => c.id === conversationId);
+    if (!conv) return;
+    await supabase
+      .from('conversation_participants')
+      .update({ is_archived: !conv.is_archived } as any)
+      .eq('conversation_id', conversationId)
+      .eq('user_id', user.id);
+    fetchConversations();
+  };
+
+  return { conversations, loading, fetchConversations, togglePin, toggleArchive, setChatTheme, createConversation };
 }

@@ -238,6 +238,57 @@ export type Database = {
         }
         Relationships: []
       }
+      change_number_verifications: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_phone: string | null
+          email: string | null
+          email_verified: boolean
+          id: string
+          new_phone: string
+          phone_verified: boolean
+          selfie_score: number | null
+          selfie_url: string | null
+          selfie_verified: boolean
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_phone?: string | null
+          email?: string | null
+          email_verified?: boolean
+          id?: string
+          new_phone: string
+          phone_verified?: boolean
+          selfie_score?: number | null
+          selfie_url?: string | null
+          selfie_verified?: boolean
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_phone?: string | null
+          email?: string | null
+          email_verified?: boolean
+          id?: string
+          new_phone?: string
+          phone_verified?: boolean
+          selfie_score?: number | null
+          selfie_url?: string | null
+          selfie_verified?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_labels: {
         Row: {
           color: string
@@ -300,6 +351,7 @@ export type Database = {
           custom_theme_url: string | null
           disappearing_duration: string | null
           id: string
+          is_archived: boolean
           is_pinned: boolean
           joined_at: string
           last_read_at: string | null
@@ -312,6 +364,7 @@ export type Database = {
           custom_theme_url?: string | null
           disappearing_duration?: string | null
           id?: string
+          is_archived?: boolean
           is_pinned?: boolean
           joined_at?: string
           last_read_at?: string | null
@@ -324,6 +377,7 @@ export type Database = {
           custom_theme_url?: string | null
           disappearing_duration?: string | null
           id?: string
+          is_archived?: boolean
           is_pinned?: boolean
           joined_at?: string
           last_read_at?: string | null
@@ -368,6 +422,42 @@ export type Database = {
           name?: string | null
           type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      email_otp_codes: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed: boolean
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          purpose: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed?: boolean
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          purpose?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed?: boolean
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          purpose?: string
+          user_id?: string
         }
         Relationships: []
       }
