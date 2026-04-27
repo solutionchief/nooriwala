@@ -314,6 +314,23 @@ export default function ChangeNumberScreen({ onBack }: Props) {
           </div>
         )}
       </div>
+
+      <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset verification?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This clears the codes and selfie progress so you can start the phone change flow over. Your current number stays the same until all 3 steps are completed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep going</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setConfirmReset(false); resetFlow(); }}>
+              Reset
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
