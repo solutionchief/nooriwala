@@ -204,7 +204,16 @@ export default function ChangeNumberScreen({ onBack }: Props) {
     <div className="flex h-full flex-col bg-background">
       <div className="flex items-center gap-3 border-b border-border bg-card px-3 py-3">
         <button onClick={onBack} className="text-muted-foreground"><ArrowLeft className="h-5 w-5" /></button>
-        <h1 className="text-lg font-semibold text-foreground">Change Phone Number</h1>
+        <h1 className="flex-1 text-lg font-semibold text-foreground">Change Phone Number</h1>
+        {step !== 'done' && (
+          <button
+            onClick={() => setConfirmReset(true)}
+            title="Cancel and restart verification"
+            className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            <RotateCcw className="h-3.5 w-3.5" /> Reset
+          </button>
+        )}
       </div>
 
       <div className="flex items-center justify-center gap-3 border-b border-border bg-card py-3">
