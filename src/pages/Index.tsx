@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, CircleDot, Settings, Plus, Users, Phone, MessageSquarePlus, PhoneCall } from 'lucide-react';
+import { MessageCircle, CircleDot, Settings, Plus, Users, Phone, MessageSquarePlus, PhoneCall, Megaphone } from 'lucide-react';
+import NewBroadcastScreen from '@/components/NewBroadcastScreen';
 import ChatList from '@/components/ChatList';
 import ChatScreen from '@/components/ChatScreen';
 import StatusScreen from '@/components/StatusScreen';
@@ -36,9 +37,10 @@ export default function Index() {
   const [activeChat, setActiveChat] = useState<ConversationWithDetails | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [showBroadcast, setShowBroadcast] = useState(false);
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
-  const { conversations, loading: convsLoading, togglePin, setChatTheme } = useConversations();
+  const { conversations, loading: convsLoading, togglePin, toggleArchive, setChatTheme } = useConversations();
   const { startCall, incomingCall, dismissIncoming, endCall } = useCalls();
   const online = useOnlineStatus();
 
@@ -201,6 +203,17 @@ export default function Index() {
     );
   }
 
+  if (showBroadcast) {
+    return (
+      <>
+        <div className="mx-auto h-screen max-w-lg">
+          <NewBroadcastScreen onBack={() => setShowBroadcast(false)} />
+        </div>
+        {incomingOverlay}
+      </>
+    );
+  }
+
   if (activeChat) {
     return (
       <>
@@ -258,6 +271,10 @@ export default function Index() {
                 <Users className="mr-2 h-4 w-4" />
                 New Group
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowBroadcast(true)}>
+                <Megaphone className="mr-2 h-4 w-4" />
+                New Broadcast
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -280,6 +297,7 @@ export default function Index() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 onTogglePin={handleTogglePin}
+                onToggleArchive={toggleArchive}
               />
             )}
             {tab === 'calls' && (
