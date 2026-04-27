@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, CheckCheck, Shield, Lock, ChevronRight, LogOut, Bell, Palette, HelpCircle, Info, User, Camera, Briefcase, Activity } from 'lucide-react';
+import { Eye, CheckCheck, Shield, Lock, ChevronRight, LogOut, Bell, Palette, HelpCircle, Info, User, Camera, Briefcase, Activity, Phone } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
 import BusinessHubScreen from './BusinessHubScreen';
 import CallMetricsScreen from './CallMetricsScreen';
+import ChangeNumberScreen from './ChangeNumberScreen';
 
 interface SettingsScreenProps {
   onSignOut: () => void;
@@ -16,9 +17,11 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
   const coverRef = useRef<HTMLInputElement>(null);
   const [showBusiness, setShowBusiness] = useState(false);
   const [showMetrics, setShowMetrics] = useState(false);
+  const [showChangeNumber, setShowChangeNumber] = useState(false);
 
   if (showBusiness) return <BusinessHubScreen onBack={() => setShowBusiness(false)} />;
   if (showMetrics) return <CallMetricsScreen onBack={() => setShowMetrics(false)} />;
+  if (showChangeNumber) return <ChangeNumberScreen onBack={() => setShowChangeNumber(false)} />;
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,6 +110,19 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
           ))}
         </div>
       </div>
+
+      {/* Account / Change Number */}
+      <button
+        onClick={() => setShowChangeNumber(true)}
+        className="flex w-full items-center gap-3 rounded-xl bg-card px-4 py-3.5 transition-colors hover:bg-secondary/50"
+      >
+        <Phone className="h-5 w-5 text-primary" />
+        <div className="flex-1 text-left">
+          <p className="font-medium text-foreground">Change Phone Number</p>
+          <p className="text-xs text-muted-foreground">2-step verification: phone + email + selfie</p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </button>
 
       {/* Business Tools */}
       <button
