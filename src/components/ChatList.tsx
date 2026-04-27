@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Pin, Archive, ArchiveRestore, Megaphone, Users, MessageCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import type { ConversationWithDetails } from '@/hooks/useConversations';
 import { formatDistanceToNow } from 'date-fns';
 import { useLabels } from '@/hooks/useLabels';
@@ -43,8 +47,10 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
   const online = useOnlineStatus();
   const [activeLabel, setActiveLabel] = useState<string>('');
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [confirmArchive, setConfirmArchive] = useState<ConversationWithDetails | null>(null);
 
   const archivedCount = conversations.filter(c => c.is_archived).length;
+  const chatsCount = conversations.filter(c => !c.is_archived).length;
   const groupsCount = conversations.filter(c => c.type === 'group' && !c.is_archived).length;
   const broadcastsCount = conversations.filter(c => c.type === 'broadcast' && !c.is_archived).length;
 
@@ -66,7 +72,7 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
   });
 
   const filterTabs: { key: FilterKey; label: string; icon: typeof MessageCircle; count?: number }[] = [
-    { key: 'all', label: 'Chats', icon: MessageCircle },
+    { key: 'all', label: 'Chats', icon: MessageCircle, count: chatsCount },
     { key: 'groups', label: 'Groups', icon: Users, count: groupsCount },
     { key: 'broadcasts', label: 'Broadcasts', icon: Megaphone, count: broadcastsCount },
     { key: 'archived', label: 'Archived', icon: Archive, count: archivedCount },
