@@ -138,9 +138,9 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
         ? `last seen ${formatDistanceToNow(new Date(conversation.participant_last_seen), { addSuffix: true })}`
         : 'offline';
 
-  const chatBgStyle = conversation.custom_theme_url
+  const chatBgStyle: React.CSSProperties = conversation.custom_theme_url
     ? { backgroundImage: `url(${conversation.custom_theme_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+    : { background: 'var(--chat-background)' };
 
   const displayName = conversation.type === 'group' ? (conversation.name || 'Group') : conversation.participant_name;
 
