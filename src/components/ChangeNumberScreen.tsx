@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Camera, Mail, Phone, Shield, Check, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Camera, Mail, Phone, Shield, Check, Loader2, X, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -36,6 +40,23 @@ export default function ChangeNumberScreen({ onBack }: Props) {
   const [selfieBusy, setSelfieBusy] = useState(false);
   const [selfieError, setSelfieError] = useState<string | null>(null);
   const [finalBusy, setFinalBusy] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  const stopCamera = () => {
+    const v = videoRef.current;
+    if (v?.srcObject) (v.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+    setStreamOn(false);
+  };
+
+  const resetFlow = () => {
+    stopCamera();
+    setStep('phone');
+    setVerificationId(null);
+    setNewPhone(''); setPhoneOtp(''); setPhoneSent(false); setPhoneBusy(false);
+    setEmail(''); setEmailOtp(''); setEmailSent(false); setEmailBusy(false);
+    setSelfieBusy(false); setSelfieError(null); setFinalBusy(false);
+    toast.success('Verification reset. Start again.');
+  };
 
   useEffect(() => {
     return () => {
@@ -183,7 +204,16 @@ export default function ChangeNumberScreen({ onBack }: Props) {
     <div className="flex h-full flex-col bg-background">
       <div className="flex items-center gap-3 border-b border-border bg-card px-3 py-3">
         <button onClick={onBack} className="text-muted-foreground"><ArrowLeft className="h-5 w-5" /></button>
-        <h1 className="text-lg font-semibold text-foreground">Change Phone Number</h1>
+        <h1 className="flex-1 text-lg font-semibold text-foreground">Change Phone Number</h1>
+        {step !== 'done' && (
+          <button
+            onClick={() => setConfirmReset(true)}
+            title="Cancel and restart verification"
+            className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            <RotateCcw className="h-3.5 w-3.5" /> Reset
+          </button>
+        )}
       </div>
 
       <div className="flex items-center justify-center gap-3 border-b border-border bg-card py-3">
@@ -284,6 +314,23 @@ export default function ChangeNumberScreen({ onBack }: Props) {
           </div>
         )}
       </div>
+
+      <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset verification?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This clears the codes and selfie progress so you can start the phone change flow over. Your current number stays the same until all 3 steps are completed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep going</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setConfirmReset(false); resetFlow(); }}>
+              Reset
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

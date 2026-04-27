@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import BusinessHubScreen from './BusinessHubScreen';
 import CallMetricsScreen from './CallMetricsScreen';
 import ChangeNumberScreen from './ChangeNumberScreen';
+import AppearanceScreen from './AppearanceScreen';
 
 interface SettingsScreenProps {
   onSignOut: () => void;
@@ -18,10 +19,12 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
   const [showBusiness, setShowBusiness] = useState(false);
   const [showMetrics, setShowMetrics] = useState(false);
   const [showChangeNumber, setShowChangeNumber] = useState(false);
+  const [showAppearance, setShowAppearance] = useState(false);
 
   if (showBusiness) return <BusinessHubScreen onBack={() => setShowBusiness(false)} />;
   if (showMetrics) return <CallMetricsScreen onBack={() => setShowMetrics(false)} />;
   if (showChangeNumber) return <ChangeNumberScreen onBack={() => setShowChangeNumber(false)} />;
+  if (showAppearance) return <AppearanceScreen onBack={() => setShowAppearance(false)} />;
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,9 +47,9 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
     { icon: Lock, label: 'App Lock', value: 'Off' },
   ];
 
-  const settingsItems = [
+  const settingsItems: { icon: any; label: string; desc: string; onClick?: () => void }[] = [
     { icon: Bell, label: 'Notifications', desc: 'Message & call tones' },
-    { icon: Palette, label: 'Appearance', desc: 'Theme, wallpaper, font size' },
+    { icon: Palette, label: 'Appearance', desc: 'Themes, wallpapers & chat backgrounds', onClick: () => setShowAppearance(true) },
     { icon: HelpCircle, label: 'Help', desc: 'FAQ, contact us' },
     { icon: Info, label: 'About', desc: 'Chief Messenger v1.0.0' },
   ];
@@ -155,7 +158,7 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
         <p className="mb-2 px-1 text-sm font-semibold uppercase tracking-wider text-muted-foreground">General</p>
         <div className="rounded-xl bg-card overflow-hidden">
           {settingsItems.map((item, i) => (
-            <button key={item.label} className={`flex w-full items-center gap-3 px-4 py-3.5 transition-colors hover:bg-secondary/50 ${i < settingsItems.length - 1 ? 'border-b border-border' : ''}`}>
+            <button key={item.label} onClick={item.onClick} className={`flex w-full items-center gap-3 px-4 py-3.5 transition-colors hover:bg-secondary/50 ${i < settingsItems.length - 1 ? 'border-b border-border' : ''}`}>
               <item.icon className="h-5 w-5 text-muted-foreground" />
               <div className="flex-1 text-left">
                 <p className="font-medium text-foreground">{item.label}</p>
