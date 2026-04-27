@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Camera, Mail, Phone, Shield, Check, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Camera, Mail, Phone, Shield, Check, Loader2, X, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
