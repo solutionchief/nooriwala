@@ -198,7 +198,7 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
 
               {onToggleArchive && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); onToggleArchive(conv.id); }}
+                  onClick={(e) => { e.stopPropagation(); setConfirmArchive(conv); }}
                   title={conv.is_archived ? 'Unarchive' : 'Archive'}
                   className="absolute right-2 top-1/2 -translate-y-1/2 hidden h-8 w-8 items-center justify-center rounded-full bg-card text-muted-foreground hover:text-primary group-hover:flex"
                 >
@@ -220,6 +220,32 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!confirmArchive} onOpenChange={(o) => !o && setConfirmArchive(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmArchive?.is_archived ? 'Unarchive this chat?' : 'Archive this chat?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmArchive?.is_archived
+                ? 'It will appear back in your main chats list.'
+                : 'It will be hidden from your main chats list. You can find it under the Archived tab.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmArchive && onToggleArchive) onToggleArchive(confirmArchive.id);
+                setConfirmArchive(null);
+              }}
+            >
+              {confirmArchive?.is_archived ? 'Unarchive' : 'Archive'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
