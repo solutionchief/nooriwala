@@ -40,6 +40,23 @@ export default function ChangeNumberScreen({ onBack }: Props) {
   const [selfieBusy, setSelfieBusy] = useState(false);
   const [selfieError, setSelfieError] = useState<string | null>(null);
   const [finalBusy, setFinalBusy] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  const stopCamera = () => {
+    const v = videoRef.current;
+    if (v?.srcObject) (v.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+    setStreamOn(false);
+  };
+
+  const resetFlow = () => {
+    stopCamera();
+    setStep('phone');
+    setVerificationId(null);
+    setNewPhone(''); setPhoneOtp(''); setPhoneSent(false); setPhoneBusy(false);
+    setEmail(''); setEmailOtp(''); setEmailSent(false); setEmailBusy(false);
+    setSelfieBusy(false); setSelfieError(null); setFinalBusy(false);
+    toast.success('Verification reset. Start again.');
+  };
 
   useEffect(() => {
     return () => {
