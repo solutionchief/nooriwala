@@ -217,14 +217,19 @@ export default function Index() {
   }
 
   if (showBroadcast) {
-    return (
-      <>
-        <div className="mx-auto h-screen max-w-lg">
-          <NewBroadcastScreen onBack={() => setShowBroadcast(false)} />
-        </div>
-        {incomingOverlay}
-      </>
-    );
+    return (<><div className="mx-auto h-screen max-w-lg"><NewBroadcastScreen onBack={() => setShowBroadcast(false)} /></div>{incomingOverlay}</>);
+  }
+  if (showStarred) {
+    return (<><div className="mx-auto h-screen max-w-lg"><StarredMessagesScreen onBack={() => setShowStarred(false)} /></div>{incomingOverlay}</>);
+  }
+  if (showLinked) {
+    return (<><div className="mx-auto h-screen max-w-lg"><LinkedDevicesScreen onBack={() => setShowLinked(false)} /></div>{incomingOverlay}</>);
+  }
+  if (showCommunities) {
+    return (<><div className="mx-auto h-screen max-w-lg"><CommunitiesScreen onBack={() => setShowCommunities(false)} /></div>{incomingOverlay}</>);
+  }
+  if (showCamera) {
+    return (<><div className="mx-auto h-screen max-w-lg"><CameraCaptureScreen onBack={() => setShowCamera(false)} /></div>{incomingOverlay}</>);
   }
 
   if (activeChat) {
@@ -248,11 +253,12 @@ export default function Index() {
     { key: 'chats', icon: MessageCircle, label: 'Chats' },
     { key: 'calls', icon: Phone, label: 'Calls' },
     { key: 'status', icon: CircleDot, label: 'Status' },
+    { key: 'channels', icon: Radio, label: 'Channels' },
     { key: 'settings', icon: Settings, label: 'Settings' },
   ];
 
   const totalUnread = conversations.reduce((sum, c) => sum + c.unread_count, 0);
-  const headerTitle = tab === 'chats' ? 'Chief Messenger' : tab === 'calls' ? 'Calls' : tab === 'status' ? 'Status' : 'Settings';
+  const headerTitle = tab === 'chats' ? 'Chief Messenger' : tab === 'calls' ? 'Calls' : tab === 'status' ? 'Status' : tab === 'channels' ? 'Channels' : 'Settings';
 
   return (
     <>
