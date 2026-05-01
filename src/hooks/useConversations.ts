@@ -16,6 +16,8 @@ export interface ConversationWithDetails {
   custom_theme_url: string | null;
   unread_count: number;
   is_archived: boolean;
+  is_muted: boolean;
+  marked_unread: boolean;
   last_message_content: string | null;
   last_message_time: string | null;
   last_message_sender: string | null;
