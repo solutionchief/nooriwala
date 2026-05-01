@@ -270,32 +270,49 @@ export default function Index() {
           </div>
           <h1 className="text-xl font-extrabold text-foreground">{headerTitle}</h1>
         </div>
-        {(tab === 'chats' || tab === 'calls') && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground" aria-label="New">
-                <Plus className="h-5 w-5" />
+        {tab !== 'settings' && (
+          <div className="flex items-center gap-1">
+            {tab === 'chats' && (
+              <button onClick={() => setShowCamera(true)} className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Camera">
+                <Camera className="h-5 w-5" />
               </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setPickerMode('chat')}>
-                <MessageSquarePlus className="mr-2 h-4 w-4" />
-                New Chat
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setPickerMode('call')}>
-                <PhoneCall className="mr-2 h-4 w-4" />
-                New Call
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowCreateGroup(true)}>
-                <Users className="mr-2 h-4 w-4" />
-                New Group
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowBroadcast(true)}>
-                <Megaphone className="mr-2 h-4 w-4" />
-                New Broadcast
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Menu">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => setPickerMode('chat')}>
+                  <MessageSquarePlus className="mr-2 h-4 w-4" /> New Chat
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPickerMode('call')}>
+                  <PhoneCall className="mr-2 h-4 w-4" /> New Call
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowCreateGroup(true)}>
+                  <Users className="mr-2 h-4 w-4" /> New Group
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowBroadcast(true)}>
+                  <Megaphone className="mr-2 h-4 w-4" /> Business Broadcasts
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setShowCommunities(true)}>
+                  <Users2 className="mr-2 h-4 w-4" /> Communities
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowLinked(true)}>
+                  <Smartphone className="mr-2 h-4 w-4" /> Linked Devices
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowStarred(true)}>
+                  <Star className="mr-2 h-4 w-4" /> Starred
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setTab('settings')}>
+                  <Settings className="mr-2 h-4 w-4" /> Settings
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
 
@@ -317,6 +334,8 @@ export default function Index() {
                 onSearchChange={setSearchQuery}
                 onTogglePin={handleTogglePin}
                 onToggleArchive={toggleArchive}
+                onToggleMute={toggleMute}
+                onMarkUnread={markUnread}
               />
             )}
             {tab === 'calls' && (
@@ -325,6 +344,7 @@ export default function Index() {
               />
             )}
             {tab === 'status' && <StatusScreen />}
+            {tab === 'channels' && <ChannelsScreen />}
             {tab === 'settings' && <SettingsScreen onSignOut={signOut} />}
           </motion.div>
         </AnimatePresence>
