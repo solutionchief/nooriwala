@@ -35,7 +35,7 @@ export function useConversations() {
     // Get user's conversation participations
     const { data: participations } = await supabase
       .from('conversation_participants')
-      .select('conversation_id, is_pinned, custom_theme_url, unread_count, is_archived')
+      .select('conversation_id, is_pinned, custom_theme_url, unread_count, is_archived, is_muted, marked_unread')
       .eq('user_id', user.id);
 
     if (!participations?.length) { setConversations([]); setLoading(false); return; }
@@ -99,6 +99,8 @@ export function useConversations() {
         custom_theme_url: part.custom_theme_url,
         unread_count: part.unread_count,
         is_archived: (part as any).is_archived ?? false,
+        is_muted: (part as any).is_muted ?? false,
+        marked_unread: (part as any).marked_unread ?? false,
         last_message_content: lastMsg?.content || null,
         last_message_time: lastMsg?.created_at || conv.updated_at,
         last_message_sender: lastMsg?.sender_id || null,
@@ -141,7 +143,7 @@ export function useConversations() {
     
     if (!conv.is_pinned) {
       const pinnedCount = conversations.filter(c => c.is_pinned).length;
-      if (pinnedCount >= 5) throw new Error('Maximum 5 pinned conversations allowed');
+      if (pinnedCount >= 10) throw new Error('Maximum 10 pinned conversations allowed');
     }
 
     await supabase
@@ -223,5 +225,27 @@ export function useConversations() {
     fetchConversations();
   };
 
-  return { conversations, loading, fetchConversations, togglePin, toggleArchive, setChatTheme, createConversation };
+  const toggleMute = async (conversationId: string) => {
+    if (!user) return;
+    const conv = conversations.find(c => c.id === conversationId);
+    if (!conv) return;
+    await supabase
+      .from('conversation_participants')
+      .update({ is_muted: !conv.is_muted } as any)
+      .eq('conversation_id', conversationId)
+      .eq('user_id', user.id);
+    fetchConversations();
+  };
+
+  const markUnread = async (conversationId: string, unread: boolean) => {
+    if (!user) return;
+    await supabase
+      .from('conversation_participants')
+      .update({ marked_unread: unread } as any)
+      .eq('conversation_id', conversationId)
+      .eq('user_id', user.id);
+    fetchConversations();
+  };
+
+  return { conversations, loading, fetchConversations, togglePin, toggleArchive, toggleMute, markUnread, setChatTheme, createConversation };
 }
