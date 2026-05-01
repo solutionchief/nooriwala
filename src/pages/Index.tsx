@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, CircleDot, Settings, Plus, Users, Phone, MessageSquarePlus, PhoneCall, Megaphone } from 'lucide-react';
+import {
+  MessageCircle, CircleDot, Settings, Plus, Users, Phone, MessageSquarePlus,
+  PhoneCall, Megaphone, Camera, MoreVertical, Star, Smartphone, Users2, Radio,
+} from 'lucide-react';
 import NewBroadcastScreen from '@/components/NewBroadcastScreen';
 import ChatList from '@/components/ChatList';
 import ChatScreen from '@/components/ChatScreen';
@@ -13,6 +16,11 @@ import CallsScreen from '@/components/CallsScreen';
 import CallScreen from '@/components/CallScreen';
 import IncomingCallOverlay from '@/components/IncomingCallOverlay';
 import ContactPicker, { type PickerMode } from '@/components/ContactPicker';
+import StarredMessagesScreen from '@/components/StarredMessagesScreen';
+import LinkedDevicesScreen from '@/components/LinkedDevicesScreen';
+import CommunitiesScreen from '@/components/CommunitiesScreen';
+import ChannelsScreen from '@/components/ChannelsScreen';
+import CameraCaptureScreen from '@/components/CameraCaptureScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
 import { useCalls } from '@/hooks/useCalls';
@@ -24,10 +32,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type Tab = 'chats' | 'calls' | 'status' | 'settings';
+type Tab = 'chats' | 'calls' | 'status' | 'channels' | 'settings';
 interface ActiveCall { callId: string; calleeId: string; calleeName: string; calleeAvatar: string | null; callType: 'audio' | 'video'; asCallee?: boolean; }
 
 export default function Index() {
