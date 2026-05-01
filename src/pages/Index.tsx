@@ -47,9 +47,13 @@ export default function Index() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showStarred, setShowStarred] = useState(false);
+  const [showLinked, setShowLinked] = useState(false);
+  const [showCommunities, setShowCommunities] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
-  const { conversations, loading: convsLoading, togglePin, toggleArchive, setChatTheme } = useConversations();
+  const { conversations, loading: convsLoading, togglePin, toggleArchive, toggleMute, markUnread, setChatTheme } = useConversations();
   const { startCall, incomingCall, dismissIncoming, endCall } = useCalls();
   const online = useOnlineStatus();
 
