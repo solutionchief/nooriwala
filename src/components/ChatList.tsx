@@ -6,9 +6,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import type { ConversationWithDetails } from '@/hooks/useConversations';
 import type { ConversationWithDetails } from '@/hooks/useConversations';
 import { formatDistanceToNow } from 'date-fns';
 import { useLabels } from '@/hooks/useLabels';
