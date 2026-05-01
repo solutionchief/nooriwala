@@ -278,6 +278,44 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!contextConv} onOpenChange={(o) => !o && setContextConv(null)}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{contextConv?.type === 'direct' ? contextConv?.participant_name : (contextConv?.name || contextConv?.participant_name)}</AlertDialogTitle>
+            <AlertDialogDescription>Choose an action.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="grid gap-1">
+            <button className="flex items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-secondary" onClick={() => { if (contextConv) onTogglePin(contextConv.id); setContextConv(null); }}>
+              <Pin className="h-4 w-4" /> {contextConv?.is_pinned ? 'Unpin' : 'Pin'}
+            </button>
+            {onToggleMute && (
+              <button className="flex items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-secondary" onClick={() => { if (contextConv) onToggleMute(contextConv.id); setContextConv(null); }}>
+                {contextConv?.is_muted ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+                {contextConv?.is_muted ? 'Unmute' : 'Mute notifications'}
+              </button>
+            )}
+            {onMarkUnread && (
+              <button className="flex items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-secondary" onClick={() => {
+                if (contextConv) onMarkUnread(contextConv.id, !(contextConv.marked_unread || contextConv.unread_count > 0));
+                setContextConv(null);
+              }}>
+                {(contextConv?.marked_unread || (contextConv?.unread_count ?? 0) > 0) ? <MailOpen className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                {(contextConv?.marked_unread || (contextConv?.unread_count ?? 0) > 0) ? 'Mark as read' : 'Mark as unread'}
+              </button>
+            )}
+            {onToggleArchive && (
+              <button className="flex items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-secondary" onClick={() => { const c = contextConv; setContextConv(null); if (c) setConfirmArchive(c); }}>
+                {contextConv?.is_archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                {contextConv?.is_archived ? 'Unarchive' : 'Archive'}
+              </button>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
