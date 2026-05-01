@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Pin, Archive, ArchiveRestore, Megaphone, Users, MessageCircle } from 'lucide-react';
+import { Search, Pin, Archive, ArchiveRestore, Megaphone, Users, MessageCircle, BellOff, Bell, MailOpen, Mail } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { ConversationWithDetails } from '@/hooks/useConversations';
 import { formatDistanceToNow } from 'date-fns';
 import { useLabels } from '@/hooks/useLabels';
@@ -20,6 +23,8 @@ interface ChatListProps {
   onSearchChange: (q: string) => void;
   onTogglePin: (convId: string) => void;
   onToggleArchive?: (convId: string) => void;
+  onToggleMute?: (convId: string) => void;
+  onMarkUnread?: (convId: string, unread: boolean) => void;
 }
 
 export function Avatar({ name, isOnline, avatarUrl, size = 'md' }: { name: string; isOnline?: boolean; avatarUrl?: string | null; size?: 'sm' | 'md' | 'lg' }) {
@@ -42,9 +47,11 @@ export function Avatar({ name, isOnline, avatarUrl, size = 'md' }: { name: strin
   );
 }
 
-export default function ChatList({ conversations, onSelectChat, searchQuery, onSearchChange, onTogglePin, onToggleArchive }: ChatListProps) {
+export default function ChatList({ conversations, onSelectChat, searchQuery, onSearchChange, onTogglePin, onToggleArchive, onToggleMute, onMarkUnread }: ChatListProps) {
   const { labels, labelsForConv } = useLabels();
   const online = useOnlineStatus();
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const [contextConv, setContextConv] = useState<ConversationWithDetails | null>(null);
   const [activeLabel, setActiveLabel] = useState<string>('');
   const [filter, setFilter] = useState<FilterKey>('all');
   const [confirmArchive, setConfirmArchive] = useState<ConversationWithDetails | null>(null);
