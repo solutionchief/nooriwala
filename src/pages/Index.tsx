@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, CircleDot, Settings, Plus, Users, Phone, MessageSquarePlus, PhoneCall, Megaphone } from 'lucide-react';
+import {
+  MessageCircle, CircleDot, Settings, Plus, Users, Phone, MessageSquarePlus,
+  PhoneCall, Megaphone, Camera, MoreVertical, Star, Smartphone, Users2, Radio,
+} from 'lucide-react';
 import NewBroadcastScreen from '@/components/NewBroadcastScreen';
 import ChatList from '@/components/ChatList';
 import ChatScreen from '@/components/ChatScreen';
@@ -13,6 +16,11 @@ import CallsScreen from '@/components/CallsScreen';
 import CallScreen from '@/components/CallScreen';
 import IncomingCallOverlay from '@/components/IncomingCallOverlay';
 import ContactPicker, { type PickerMode } from '@/components/ContactPicker';
+import StarredMessagesScreen from '@/components/StarredMessagesScreen';
+import LinkedDevicesScreen from '@/components/LinkedDevicesScreen';
+import CommunitiesScreen from '@/components/CommunitiesScreen';
+import ChannelsScreen from '@/components/ChannelsScreen';
+import CameraCaptureScreen from '@/components/CameraCaptureScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
 import { useCalls } from '@/hooks/useCalls';
@@ -24,10 +32,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type Tab = 'chats' | 'calls' | 'status' | 'settings';
+type Tab = 'chats' | 'calls' | 'status' | 'channels' | 'settings';
 interface ActiveCall { callId: string; calleeId: string; calleeName: string; calleeAvatar: string | null; callType: 'audio' | 'video'; asCallee?: boolean; }
 
 export default function Index() {
@@ -38,9 +47,13 @@ export default function Index() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showStarred, setShowStarred] = useState(false);
+  const [showLinked, setShowLinked] = useState(false);
+  const [showCommunities, setShowCommunities] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
-  const { conversations, loading: convsLoading, togglePin, toggleArchive, setChatTheme } = useConversations();
+  const { conversations, loading: convsLoading, togglePin, toggleArchive, toggleMute, markUnread, setChatTheme } = useConversations();
   const { startCall, incomingCall, dismissIncoming, endCall } = useCalls();
   const online = useOnlineStatus();
 
@@ -204,14 +217,19 @@ export default function Index() {
   }
 
   if (showBroadcast) {
-    return (
-      <>
-        <div className="mx-auto h-screen max-w-lg">
-          <NewBroadcastScreen onBack={() => setShowBroadcast(false)} />
-        </div>
-        {incomingOverlay}
-      </>
-    );
+    return (<><div className="mx-auto h-screen max-w-lg"><NewBroadcastScreen onBack={() => setShowBroadcast(false)} /></div>{incomingOverlay}</>);
+  }
+  if (showStarred) {
+    return (<><div className="mx-auto h-screen max-w-lg"><StarredMessagesScreen onBack={() => setShowStarred(false)} /></div>{incomingOverlay}</>);
+  }
+  if (showLinked) {
+    return (<><div className="mx-auto h-screen max-w-lg"><LinkedDevicesScreen onBack={() => setShowLinked(false)} /></div>{incomingOverlay}</>);
+  }
+  if (showCommunities) {
+    return (<><div className="mx-auto h-screen max-w-lg"><CommunitiesScreen onBack={() => setShowCommunities(false)} /></div>{incomingOverlay}</>);
+  }
+  if (showCamera) {
+    return (<><div className="mx-auto h-screen max-w-lg"><CameraCaptureScreen onBack={() => setShowCamera(false)} /></div>{incomingOverlay}</>);
   }
 
   if (activeChat) {
@@ -235,11 +253,12 @@ export default function Index() {
     { key: 'chats', icon: MessageCircle, label: 'Chats' },
     { key: 'calls', icon: Phone, label: 'Calls' },
     { key: 'status', icon: CircleDot, label: 'Status' },
+    { key: 'channels', icon: Radio, label: 'Channels' },
     { key: 'settings', icon: Settings, label: 'Settings' },
   ];
 
   const totalUnread = conversations.reduce((sum, c) => sum + c.unread_count, 0);
-  const headerTitle = tab === 'chats' ? 'Chief Messenger' : tab === 'calls' ? 'Calls' : tab === 'status' ? 'Status' : 'Settings';
+  const headerTitle = tab === 'chats' ? 'Chief Messenger' : tab === 'calls' ? 'Calls' : tab === 'status' ? 'Status' : tab === 'channels' ? 'Channels' : 'Settings';
 
   return (
     <>
@@ -251,32 +270,49 @@ export default function Index() {
           </div>
           <h1 className="text-xl font-extrabold text-foreground">{headerTitle}</h1>
         </div>
-        {(tab === 'chats' || tab === 'calls') && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground" aria-label="New">
-                <Plus className="h-5 w-5" />
+        {tab !== 'settings' && (
+          <div className="flex items-center gap-1">
+            {tab === 'chats' && (
+              <button onClick={() => setShowCamera(true)} className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Camera">
+                <Camera className="h-5 w-5" />
               </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setPickerMode('chat')}>
-                <MessageSquarePlus className="mr-2 h-4 w-4" />
-                New Chat
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setPickerMode('call')}>
-                <PhoneCall className="mr-2 h-4 w-4" />
-                New Call
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowCreateGroup(true)}>
-                <Users className="mr-2 h-4 w-4" />
-                New Group
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowBroadcast(true)}>
-                <Megaphone className="mr-2 h-4 w-4" />
-                New Broadcast
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Menu">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => setPickerMode('chat')}>
+                  <MessageSquarePlus className="mr-2 h-4 w-4" /> New Chat
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPickerMode('call')}>
+                  <PhoneCall className="mr-2 h-4 w-4" /> New Call
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowCreateGroup(true)}>
+                  <Users className="mr-2 h-4 w-4" /> New Group
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowBroadcast(true)}>
+                  <Megaphone className="mr-2 h-4 w-4" /> Business Broadcasts
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setShowCommunities(true)}>
+                  <Users2 className="mr-2 h-4 w-4" /> Communities
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowLinked(true)}>
+                  <Smartphone className="mr-2 h-4 w-4" /> Linked Devices
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowStarred(true)}>
+                  <Star className="mr-2 h-4 w-4" /> Starred
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setTab('settings')}>
+                  <Settings className="mr-2 h-4 w-4" /> Settings
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
 
@@ -298,6 +334,8 @@ export default function Index() {
                 onSearchChange={setSearchQuery}
                 onTogglePin={handleTogglePin}
                 onToggleArchive={toggleArchive}
+                onToggleMute={toggleMute}
+                onMarkUnread={markUnread}
               />
             )}
             {tab === 'calls' && (
@@ -306,6 +344,7 @@ export default function Index() {
               />
             )}
             {tab === 'status' && <StatusScreen />}
+            {tab === 'channels' && <ChannelsScreen />}
             {tab === 'settings' && <SettingsScreen onSignOut={signOut} />}
           </motion.div>
         </AnimatePresence>

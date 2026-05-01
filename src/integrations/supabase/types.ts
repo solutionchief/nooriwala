@@ -289,6 +289,112 @@ export type Database = {
         }
         Relationships: []
       }
+      channel_followers: {
+        Row: {
+          channel_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_followers_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channel_posts: {
+        Row: {
+          author_id: string
+          channel_id: string
+          content: string | null
+          content_type: string
+          created_at: string
+          id: string
+          media_url: string | null
+        }
+        Insert: {
+          author_id: string
+          channel_id: string
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          media_url?: string | null
+        }
+        Update: {
+          author_id?: string
+          channel_id?: string
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          media_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_posts_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channels: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          description: string | null
+          follower_count: number
+          handle: string
+          id: string
+          is_verified: boolean
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          description?: string | null
+          follower_count?: number
+          handle: string
+          id?: string
+          is_verified?: boolean
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          description?: string | null
+          follower_count?: number
+          handle?: string
+          id?: string
+          is_verified?: boolean
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       chat_labels: {
         Row: {
           color: string
@@ -312,6 +418,97 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      communities: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      community_groups: {
+        Row: {
+          added_at: string
+          community_id: string
+          conversation_id: string
+          id: string
+        }
+        Insert: {
+          added_at?: string
+          community_id: string
+          conversation_id: string
+          id?: string
+        }
+        Update: {
+          added_at?: string
+          community_id?: string
+          conversation_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_groups_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_members: {
+        Row: {
+          community_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          community_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          community_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_members_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversation_labels: {
         Row: {
@@ -352,9 +549,11 @@ export type Database = {
           disappearing_duration: string | null
           id: string
           is_archived: boolean
+          is_muted: boolean
           is_pinned: boolean
           joined_at: string
           last_read_at: string | null
+          marked_unread: boolean
           role: string
           unread_count: number
           user_id: string
@@ -365,9 +564,11 @@ export type Database = {
           disappearing_duration?: string | null
           id?: string
           is_archived?: boolean
+          is_muted?: boolean
           is_pinned?: boolean
           joined_at?: string
           last_read_at?: string | null
+          marked_unread?: boolean
           role?: string
           unread_count?: number
           user_id: string
@@ -378,9 +579,11 @@ export type Database = {
           disappearing_duration?: string | null
           id?: string
           is_archived?: boolean
+          is_muted?: boolean
           is_pinned?: boolean
           joined_at?: string
           last_read_at?: string | null
+          marked_unread?: boolean
           role?: string
           unread_count?: number
           user_id?: string
@@ -401,6 +604,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          is_announcement: boolean
           name: string | null
           type: string
           updated_at: string
@@ -410,6 +614,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_announcement?: boolean
           name?: string | null
           type?: string
           updated_at?: string
@@ -419,6 +624,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_announcement?: boolean
           name?: string | null
           type?: string
           updated_at?: string
@@ -457,6 +663,36 @@ export type Database = {
           expires_at?: string
           id?: string
           purpose?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      linked_devices: {
+        Row: {
+          created_at: string
+          device_code: string
+          device_name: string
+          id: string
+          last_active_at: string
+          platform: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_code: string
+          device_name: string
+          id?: string
+          last_active_at?: string
+          platform?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_code?: string
+          device_name?: string
+          id?: string
+          last_active_at?: string
+          platform?: string | null
           user_id?: string
         }
         Relationships: []
@@ -772,6 +1008,30 @@ export type Database = {
         }
         Relationships: []
       }
+      starred_messages: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       status_viewers: {
         Row: {
           id: string
@@ -874,6 +1134,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_community_admin: {
+        Args: { _community_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_community_member: {
+        Args: { _community_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_conversation_member: {
         Args: { _conversation_id: string; _user_id: string }
         Returns: boolean

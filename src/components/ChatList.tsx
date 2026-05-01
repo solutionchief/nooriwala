@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Pin, Archive, ArchiveRestore, Megaphone, Users, MessageCircle } from 'lucide-react';
+import { Search, Pin, Archive, ArchiveRestore, Megaphone, Users, MessageCircle, BellOff, Bell, MailOpen, Mail } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -20,6 +20,8 @@ interface ChatListProps {
   onSearchChange: (q: string) => void;
   onTogglePin: (convId: string) => void;
   onToggleArchive?: (convId: string) => void;
+  onToggleMute?: (convId: string) => void;
+  onMarkUnread?: (convId: string, unread: boolean) => void;
 }
 
 export function Avatar({ name, isOnline, avatarUrl, size = 'md' }: { name: string; isOnline?: boolean; avatarUrl?: string | null; size?: 'sm' | 'md' | 'lg' }) {
@@ -42,9 +44,11 @@ export function Avatar({ name, isOnline, avatarUrl, size = 'md' }: { name: strin
   );
 }
 
-export default function ChatList({ conversations, onSelectChat, searchQuery, onSearchChange, onTogglePin, onToggleArchive }: ChatListProps) {
+export default function ChatList({ conversations, onSelectChat, searchQuery, onSearchChange, onTogglePin, onToggleArchive, onToggleMute, onMarkUnread }: ChatListProps) {
   const { labels, labelsForConv } = useLabels();
   const online = useOnlineStatus();
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const [contextConv, setContextConv] = useState<ConversationWithDetails | null>(null);
   const [activeLabel, setActiveLabel] = useState<string>('');
   const [filter, setFilter] = useState<FilterKey>('all');
   const [confirmArchive, setConfirmArchive] = useState<ConversationWithDetails | null>(null);
@@ -145,6 +149,24 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
       <div className="flex flex-col">
         {filtered.map((conv, i) => {
           const title = conv.type === 'direct' ? conv.participant_name : (conv.name || conv.participant_name);
+          let pressTimer: any;
+          const onPressStart = (e: React.PointerEvent) => {
+            swipeStart.current = { x: e.clientX, y: e.clientY };
+            pressTimer = setTimeout(() => setContextConv(conv), 550);
+          };
+          const onPressEnd = (e: React.PointerEvent) => {
+            clearTimeout(pressTimer);
+            if (!swipeStart.current) return;
+            const dx = e.clientX - swipeStart.current.x;
+            const dy = e.clientY - swipeStart.current.y;
+            swipeStart.current = null;
+            if (Math.abs(dx) > 60 && Math.abs(dy) < 40) {
+              if (dx < 0 && onToggleArchive) { setConfirmArchive(conv); }
+              else if (dx > 0 && onMarkUnread) { onMarkUnread(conv.id, !(conv.marked_unread || conv.unread_count > 0)); }
+              return;
+            }
+          };
+          const showUnreadIndicator = conv.unread_count > 0 || conv.marked_unread;
           return (
             <motion.div
               key={conv.id}
@@ -155,7 +177,11 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
             >
               <button
                 onClick={() => onSelectChat(conv)}
-                className="flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-card active:bg-secondary text-left"
+                onPointerDown={onPressStart}
+                onPointerUp={onPressEnd}
+                onPointerCancel={() => clearTimeout(pressTimer)}
+                onContextMenu={(e) => { e.preventDefault(); setContextConv(conv); }}
+                className="flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-card active:bg-secondary text-left touch-pan-y"
               >
                 <Avatar
                   name={title}
@@ -169,6 +195,7 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
                       {conv.type === 'group' && <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
                       <span className="font-semibold text-foreground truncate">{title}</span>
                       {conv.is_pinned && <Pin className="h-3 w-3 text-primary rotate-45 shrink-0" />}
+                      {conv.is_muted && <BellOff className="h-3 w-3 text-muted-foreground shrink-0" />}
                     </div>
                     <span className="text-xs text-muted-foreground shrink-0">
                       {conv.last_message_time ? formatDistanceToNow(new Date(conv.last_message_time), { addSuffix: true }) : ''}
@@ -178,9 +205,9 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
                     <p className="text-sm text-muted-foreground truncate">
                       {conv.last_message_content || 'No messages yet'}
                     </p>
-                    {conv.unread_count > 0 && (
+                    {showUnreadIndicator && (
                       <span className="ml-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                        {conv.unread_count}
+                        {conv.unread_count > 0 ? conv.unread_count : '•'}
                       </span>
                     )}
                   </div>
@@ -196,15 +223,17 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
                 </div>
               </button>
 
-              {onToggleArchive && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); setConfirmArchive(conv); }}
-                  title={conv.is_archived ? 'Unarchive' : 'Archive'}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 hidden h-8 w-8 items-center justify-center rounded-full bg-card text-muted-foreground hover:text-primary group-hover:flex"
-                >
-                  {conv.is_archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-                </button>
-              )}
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden gap-1 group-hover:flex">
+                {onToggleArchive && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setConfirmArchive(conv); }}
+                    title={conv.is_archived ? 'Unarchive' : 'Archive'}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-card text-muted-foreground hover:text-primary"
+                  >
+                    {conv.is_archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                  </button>
+                )}
+              </div>
             </motion.div>
           );
         })}
@@ -243,6 +272,44 @@ export default function ChatList({ conversations, onSelectChat, searchQuery, onS
             >
               {confirmArchive?.is_archived ? 'Unarchive' : 'Archive'}
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!contextConv} onOpenChange={(o) => !o && setContextConv(null)}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{contextConv?.type === 'direct' ? contextConv?.participant_name : (contextConv?.name || contextConv?.participant_name)}</AlertDialogTitle>
+            <AlertDialogDescription>Choose an action.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="grid gap-1">
+            <button className="flex items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-secondary" onClick={() => { if (contextConv) onTogglePin(contextConv.id); setContextConv(null); }}>
+              <Pin className="h-4 w-4" /> {contextConv?.is_pinned ? 'Unpin' : 'Pin'}
+            </button>
+            {onToggleMute && (
+              <button className="flex items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-secondary" onClick={() => { if (contextConv) onToggleMute(contextConv.id); setContextConv(null); }}>
+                {contextConv?.is_muted ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+                {contextConv?.is_muted ? 'Unmute' : 'Mute notifications'}
+              </button>
+            )}
+            {onMarkUnread && (
+              <button className="flex items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-secondary" onClick={() => {
+                if (contextConv) onMarkUnread(contextConv.id, !(contextConv.marked_unread || contextConv.unread_count > 0));
+                setContextConv(null);
+              }}>
+                {(contextConv?.marked_unread || (contextConv?.unread_count ?? 0) > 0) ? <MailOpen className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                {(contextConv?.marked_unread || (contextConv?.unread_count ?? 0) > 0) ? 'Mark as read' : 'Mark as unread'}
+              </button>
+            )}
+            {onToggleArchive && (
+              <button className="flex items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-secondary" onClick={() => { const c = contextConv; setContextConv(null); if (c) setConfirmArchive(c); }}>
+                {contextConv?.is_archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                {contextConv?.is_archived ? 'Unarchive' : 'Archive'}
+              </button>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
