@@ -387,7 +387,7 @@ export default function Index() {
         </div>
       )}
 
-
+      <div className="border-t border-border bg-card">
         <div className="flex">
           {tabs.map(t => {
             const isActive = tab === t.key;
