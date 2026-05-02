@@ -217,7 +217,16 @@ export default function Index() {
   }
 
   if (showBroadcast) {
-    return (<><div className="mx-auto h-screen max-w-lg"><NewBroadcastScreen onBack={() => setShowBroadcast(false)} /></div>{incomingOverlay}</>);
+    return (<><div className="mx-auto h-screen max-w-lg"><NewBroadcastScreen
+      onBack={() => setShowBroadcast(false)}
+      onCreated={(convId) => {
+        setShowBroadcast(false);
+        setTimeout(() => {
+          const conv = conversations.find(c => c.id === convId);
+          if (conv) setActiveChat(conv);
+        }, 400);
+      }}
+    /></div>{incomingOverlay}</>);
   }
   if (showStarred) {
     return (<><div className="mx-auto h-screen max-w-lg"><StarredMessagesScreen onBack={() => setShowStarred(false)} /></div>{incomingOverlay}</>);
