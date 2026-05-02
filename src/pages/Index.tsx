@@ -229,7 +229,14 @@ export default function Index() {
     return (<><div className="mx-auto h-screen max-w-lg"><CommunitiesScreen onBack={() => setShowCommunities(false)} /></div>{incomingOverlay}</>);
   }
   if (showCamera) {
-    return (<><div className="mx-auto h-screen max-w-lg"><CameraCaptureScreen onBack={() => setShowCamera(false)} /></div>{incomingOverlay}</>);
+    return (<><div className="mx-auto h-screen max-w-lg"><CameraCaptureScreen
+      onBack={() => setShowCamera(false)}
+      onSentToChat={(convId) => {
+        setShowCamera(false);
+        const conv = conversations.find(c => c.id === convId);
+        if (conv) setActiveChat(conv);
+      }}
+    /></div>{incomingOverlay}</>);
   }
 
   if (activeChat) {
