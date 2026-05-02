@@ -115,11 +115,49 @@ export function useMessages(conversationId: string) {
 
   const deleteForSelf = async (messageId: string) => {
     if (!user) return;
+    // Snapshot prior content for audit trail BEFORE marking deleted.
+    const target = messages.find(m => m.id === messageId);
+    // Receiver visibility (visible_to_receiver) is enforced at app layer — we never
+    // touch the message row's content, only flip deleted_by_sender so the receiver
+    // sees the "sender tried to delete this" notice. Messages remain permanent.
     await supabase
       .from('messages')
       .update({ deleted_by_sender: true })
       .eq('id', messageId)
       .eq('sender_id', user.id);
+    // Best-effort audit log; don't block UI on failure.
+    try {
+      await supabase.from('message_delete_audit').insert({
+        message_id: messageId,
+        conversation_id: conversationId,
+        attempted_by: user.id,
+        attempt_type: 'delete_for_self',
+        prior_content: target?.content ?? null,
+        prior_content_type: target?.content_type ?? null,
+      });
+    } catch (e) {
+      // Non-fatal: audit failure should never break the UI flow.
+      console.warn('[audit] failed to log delete attempt', e);
+    }
+  };
+
+  // Send media that was already uploaded (e.g. by CameraCaptureScreen) to
+  // an arbitrary conversation by id. Used by the camera→chat attach flow.
+  const sendCapturedMediaTo = async (
+    targetConvId: string,
+    mediaUrl: string,
+    type: 'image' | 'video',
+    caption?: string,
+  ) => {
+    if (!user) return;
+    await supabase.from('messages').insert({
+      conversation_id: targetConvId,
+      sender_id: user.id,
+      content: caption || null,
+      content_type: type,
+      media_url: mediaUrl,
+      status: 'sent',
+    });
   };
 
   const addReaction = async (messageId: string, emoji: string) => {
