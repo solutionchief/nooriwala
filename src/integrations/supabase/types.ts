@@ -697,6 +697,39 @@ export type Database = {
         }
         Relationships: []
       }
+      message_delete_audit: {
+        Row: {
+          attempt_type: string
+          attempted_by: string
+          conversation_id: string
+          created_at: string
+          id: string
+          message_id: string
+          prior_content: string | null
+          prior_content_type: string | null
+        }
+        Insert: {
+          attempt_type?: string
+          attempted_by: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message_id: string
+          prior_content?: string | null
+          prior_content_type?: string | null
+        }
+        Update: {
+          attempt_type?: string
+          attempted_by?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message_id?: string
+          prior_content?: string | null
+          prior_content_type?: string | null
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string

@@ -229,7 +229,14 @@ export default function Index() {
     return (<><div className="mx-auto h-screen max-w-lg"><CommunitiesScreen onBack={() => setShowCommunities(false)} /></div>{incomingOverlay}</>);
   }
   if (showCamera) {
-    return (<><div className="mx-auto h-screen max-w-lg"><CameraCaptureScreen onBack={() => setShowCamera(false)} /></div>{incomingOverlay}</>);
+    return (<><div className="mx-auto h-screen max-w-lg"><CameraCaptureScreen
+      onBack={() => setShowCamera(false)}
+      onSentToChat={(convId) => {
+        setShowCamera(false);
+        const conv = conversations.find(c => c.id === convId);
+        if (conv) setActiveChat(conv);
+      }}
+    /></div>{incomingOverlay}</>);
   }
 
   if (activeChat) {
@@ -262,7 +269,7 @@ export default function Index() {
 
   return (
     <>
-    <div className="mx-auto flex h-screen max-w-lg flex-col bg-background">
+    <div className="relative mx-auto flex h-screen max-w-lg flex-col bg-background">
       <div className="flex items-center justify-between border-b border-border bg-card px-4 py-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -349,6 +356,36 @@ export default function Index() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Floating + (WhatsApp-style) — quick start chat / call / group / broadcast on the chats tab */}
+      {tab === 'chats' && (
+        <div className="pointer-events-none absolute bottom-20 right-4 z-20">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95"
+                aria-label="New"
+              >
+                <Plus className="h-6 w-6" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="top" className="w-52">
+              <DropdownMenuItem onClick={() => setPickerMode('chat')}>
+                <MessageSquarePlus className="mr-2 h-4 w-4" /> New Chat
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPickerMode('call')}>
+                <PhoneCall className="mr-2 h-4 w-4" /> New Call
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowCreateGroup(true)}>
+                <Users className="mr-2 h-4 w-4" /> New Group
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowBroadcast(true)}>
+                <Megaphone className="mr-2 h-4 w-4" /> New Broadcast
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
 
       <div className="border-t border-border bg-card">
         <div className="flex">
