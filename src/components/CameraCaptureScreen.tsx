@@ -1,20 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Camera, Video, RotateCcw, X, Send, Type } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, Camera, Video, RotateCcw, X, Send, Type, Search, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar } from '@/components/ChatList';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
 import { toast } from 'sonner';
 
 interface Props {
   onBack: () => void;
-  onSendToChat?: () => void;
+  onSentToChat?: (conversationId: string) => void;
 }
 
 type Mode = 'photo' | 'video';
-type Stage = 'capture' | 'preview' | 'destination';
+type Stage = 'capture' | 'preview' | 'pick-chat';
 
-export default function CameraCaptureScreen({ onBack, onSendToChat }: Props) {
+export default function CameraCaptureScreen({ onBack, onSentToChat }: Props) {
   const { user } = useAuth();
+  const { conversations } = useConversations();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -27,6 +31,7 @@ export default function CameraCaptureScreen({ onBack, onSendToChat }: Props) {
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
   const [posting, setPosting] = useState(false);
   const [permError, setPermError] = useState<string | null>(null);
+  const [chatQuery, setChatQuery] = useState('');
 
   const startStream = async () => {
     try {
@@ -45,7 +50,7 @@ export default function CameraCaptureScreen({ onBack, onSendToChat }: Props) {
       setPermError(
         e?.name === 'NotAllowedError'
           ? 'Camera permission denied. Please allow camera access in your browser settings.'
-          : e?.message || 'Could not access camera'
+          : e?.message || 'Could not access camera',
       );
     }
   };
@@ -93,7 +98,7 @@ export default function CameraCaptureScreen({ onBack, onSendToChat }: Props) {
     setRecording(false);
   };
 
-  const upload = async (folder: string) => {
+  const upload = async (folder: string): Promise<string | null> => {
     if (!previewBlob || !user) return null;
     const ext = mode === 'photo' ? 'jpg' : 'webm';
     const path = `${user.id}/${Date.now()}.${ext}`;
@@ -122,16 +127,33 @@ export default function CameraCaptureScreen({ onBack, onSendToChat }: Props) {
     onBack();
   };
 
-  const sendToChat = async () => {
+  const sendToChat = async (conv: ConversationWithDetails) => {
+    if (!user) return;
     setPosting(true);
     const url = await upload('message-media');
+    if (!url) { setPosting(false); return; }
+    const { error } = await supabase.from('messages').insert({
+      conversation_id: conv.id,
+      sender_id: user.id,
+      content_type: mode === 'photo' ? 'image' : 'video',
+      media_url: url,
+      status: 'sent',
+    });
     setPosting(false);
-    if (!url) return;
-    (window as any).__lastCapturedMedia = { url, type: mode === 'photo' ? 'image' : 'video' };
-    toast.success('Saved. Open a chat and tap the attach button — or use Status to share.');
-    onSendToChat?.();
+    if (error) { toast.error(error.message); return; }
+    toast.success('Sent');
+    onSentToChat?.(conv.id);
     onBack();
   };
+
+  const filteredConvs = useMemo(() => {
+    const q = chatQuery.trim().toLowerCase();
+    return conversations.filter(c => {
+      if (c.is_archived) return false;
+      const name = (c.type === 'group' ? (c.name || 'Group') : c.participant_name) || '';
+      return q === '' || name.toLowerCase().includes(q);
+    });
+  }, [conversations, chatQuery]);
 
   if (permError) {
     return (
@@ -146,6 +168,49 @@ export default function CameraCaptureScreen({ onBack, onSendToChat }: Props) {
           <p className="text-sm text-muted-foreground">{permError}</p>
           <Button onClick={startStream}>Retry</Button>
         </div>
+      </div>
+    );
+  }
+
+  if (stage === 'pick-chat' && previewUrl) {
+    return (
+      <div className="flex h-full flex-col bg-background">
+        <div className="flex items-center gap-3 border-b border-border bg-card px-4 py-3">
+          <button onClick={() => setStage('preview')}><ArrowLeft className="h-5 w-5 text-muted-foreground" /></button>
+          <h1 className="text-lg font-bold text-foreground">Send to…</h1>
+        </div>
+        <div className="border-b border-border bg-card px-3 py-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={chatQuery} onChange={e => setChatQuery(e.target.value)} placeholder="Search chats" className="pl-9" />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {filteredConvs.length === 0 ? (
+            <p className="p-8 text-center text-sm text-muted-foreground">No chats found</p>
+          ) : filteredConvs.map(c => {
+            const name = c.type === 'group' ? (c.name || 'Group') : c.participant_name;
+            const avatar = c.type === 'group' ? c.avatar_url : c.participant_avatar;
+            return (
+              <button
+                key={c.id}
+                disabled={posting}
+                onClick={() => sendToChat(c)}
+                className="flex w-full items-center gap-3 px-4 py-3 hover:bg-card text-left disabled:opacity-50"
+              >
+                <Avatar name={name} avatarUrl={avatar} isOnline={c.participant_online} />
+                <div className="flex-1 min-w-0">
+                  <p className="truncate font-medium text-foreground">{name}</p>
+                  <p className="text-xs text-muted-foreground">{c.type === 'group' ? 'Group' : (c.participant_online ? 'Online' : 'Offline')}</p>
+                </div>
+                <MessageCircle className="h-4 w-4 text-primary" />
+              </button>
+            );
+          })}
+        </div>
+        {posting && (
+          <div className="border-t border-border bg-card px-4 py-3 text-center text-sm text-muted-foreground">Sending…</div>
+        )}
       </div>
     );
   }
@@ -168,7 +233,7 @@ export default function CameraCaptureScreen({ onBack, onSendToChat }: Props) {
           )}
         </div>
         <div className="flex gap-2 p-4 bg-card">
-          <Button variant="secondary" disabled={posting} className="flex-1" onClick={sendToChat}>
+          <Button variant="secondary" disabled={posting} className="flex-1" onClick={() => setStage('pick-chat')}>
             <Send className="mr-1 h-4 w-4" /> Send to chat
           </Button>
           <Button disabled={posting} className="flex-1" onClick={sendToStatus}>
