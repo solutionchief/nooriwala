@@ -248,6 +248,9 @@ export default function Index() {
       }}
     /></div>{incomingOverlay}</>);
   }
+  if (showScanner) {
+    return (<><div className="mx-auto h-screen max-w-lg"><ScannerScreen onBack={() => setShowScanner(false)} /></div>{incomingOverlay}</>);
+  }
 
   if (activeChat) {
     return (
