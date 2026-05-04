@@ -8,7 +8,11 @@ interface Props { onBack: () => void; }
 export default function AppearanceScreen({ onBack }: Props) {
   const [prefs, setPrefs] = useState<AppearancePrefs>(() => loadPrefs());
 
-  useEffect(() => { savePrefs(prefs); }, [prefs]);
+  useEffect(() => {
+    // Expose photo wallpaper URLs for appearance.ts to resolve
+    (window as any).__PHOTO_WP_URL = Object.fromEntries(PHOTO_WALLPAPERS.map(p => [p.id, p.url]));
+    savePrefs(prefs);
+  }, [prefs]);
 
   const Section = ({ icon: Icon, title, subtitle, children }: any) => (
     <div className="space-y-2">
