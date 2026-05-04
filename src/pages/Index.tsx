@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageCircle, CircleDot, Settings, Plus, Users, Phone, MessageSquarePlus,
-  PhoneCall, Megaphone, Camera, MoreVertical, Star, Smartphone, Users2, Radio,
+  PhoneCall, Megaphone, Camera, MoreVertical, Star, Smartphone, Users2, Radio, ScanLine,
 } from 'lucide-react';
 import NewBroadcastScreen from '@/components/NewBroadcastScreen';
 import ChatList from '@/components/ChatList';
