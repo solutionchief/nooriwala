@@ -51,6 +51,7 @@ export default function Index() {
   const [showLinked, setShowLinked] = useState(false);
   const [showCommunities, setShowCommunities] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
   const { conversations, loading: convsLoading, togglePin, toggleArchive, toggleMute, markUnread, setChatTheme } = useConversations();
