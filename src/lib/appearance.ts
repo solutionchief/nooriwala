@@ -64,10 +64,11 @@ export interface AppearancePrefs {
   themeId: string;
   wallpaperId: string;
   chatBgId: string;
+  photoWallpaperId?: string | null; // overrides chatBgId when set
 }
 
 const KEY = 'appearance.v1';
-const DEFAULTS: AppearancePrefs = { themeId: 'emerald-dark', wallpaperId: 'none', chatBgId: 'default' };
+const DEFAULTS: AppearancePrefs = { themeId: 'emerald-dark', wallpaperId: 'none', chatBgId: 'default', photoWallpaperId: null };
 
 export function loadPrefs(): AppearancePrefs {
   try {
