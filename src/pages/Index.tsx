@@ -327,6 +327,9 @@ export default function Index() {
                 <DropdownMenuItem onClick={() => setShowStarred(true)}>
                   <Star className="mr-2 h-4 w-4" /> Starred
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowScanner(true)}>
+                  <ScanLine className="mr-2 h-4 w-4" /> Scanner
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setTab('settings')}>
                   <Settings className="mr-2 h-4 w-4" /> Settings
