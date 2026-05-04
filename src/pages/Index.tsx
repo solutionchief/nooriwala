@@ -21,6 +21,7 @@ import LinkedDevicesScreen from '@/components/LinkedDevicesScreen';
 import CommunitiesScreen from '@/components/CommunitiesScreen';
 import ChannelsScreen from '@/components/ChannelsScreen';
 import CameraCaptureScreen from '@/components/CameraCaptureScreen';
+import ScannerScreen from '@/components/ScannerScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
 import { useCalls } from '@/hooks/useCalls';
