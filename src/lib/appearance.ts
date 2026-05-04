@@ -105,11 +105,21 @@ export function applyPrefs(p: AppearancePrefs) {
   document.body.style.backgroundAttachment = 'fixed';
 
   const cb = CHAT_BACKGROUNDS.find(x => x.id === p.chatBgId) || CHAT_BACKGROUNDS[0];
-  root.style.setProperty('--chat-background', cb.css);
+  let chatBg = cb.css;
+  if (p.photoWallpaperId) {
+    // Lazy import avoids cycles in build but kept inline for runtime
+    const url = (window as any).__PHOTO_WP_URL?.[p.photoWallpaperId];
+    if (url) chatBg = `url("${url}") center/cover no-repeat`;
+  }
+  root.style.setProperty('--chat-background', chatBg);
 }
 
 export function getChatBackgroundCss(): string {
   const p = loadPrefs();
+  if (p.photoWallpaperId) {
+    const url = (window as any).__PHOTO_WP_URL?.[p.photoWallpaperId];
+    if (url) return `url("${url}") center/cover no-repeat`;
+  }
   const cb = CHAT_BACKGROUNDS.find(x => x.id === p.chatBgId) || CHAT_BACKGROUNDS[0];
   return cb.css;
 }
