@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Check, Palette, Image as ImageIcon, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Check, Palette, Image as ImageIcon, MessageCircle, Camera } from 'lucide-react';
 import { THEMES, WALLPAPERS, CHAT_BACKGROUNDS, loadPrefs, savePrefs, type AppearancePrefs } from '@/lib/appearance';
+import { PHOTO_WALLPAPERS } from '@/lib/photoWallpapers';
 
 interface Props { onBack: () => void; }
 
