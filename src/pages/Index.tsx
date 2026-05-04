@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageCircle, CircleDot, Settings, Plus, Users, Phone, MessageSquarePlus,
-  PhoneCall, Megaphone, Camera, MoreVertical, Star, Smartphone, Users2, Radio,
+  PhoneCall, Megaphone, Camera, MoreVertical, Star, Smartphone, Users2, Radio, ScanLine,
 } from 'lucide-react';
 import NewBroadcastScreen from '@/components/NewBroadcastScreen';
 import ChatList from '@/components/ChatList';
@@ -21,6 +21,7 @@ import LinkedDevicesScreen from '@/components/LinkedDevicesScreen';
 import CommunitiesScreen from '@/components/CommunitiesScreen';
 import ChannelsScreen from '@/components/ChannelsScreen';
 import CameraCaptureScreen from '@/components/CameraCaptureScreen';
+import ScannerScreen from '@/components/ScannerScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, type ConversationWithDetails } from '@/hooks/useConversations';
 import { useCalls } from '@/hooks/useCalls';
@@ -51,6 +52,7 @@ export default function Index() {
   const [showLinked, setShowLinked] = useState(false);
   const [showCommunities, setShowCommunities] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
   const { conversations, loading: convsLoading, togglePin, toggleArchive, toggleMute, markUnread, setChatTheme } = useConversations();
@@ -247,6 +249,9 @@ export default function Index() {
       }}
     /></div>{incomingOverlay}</>);
   }
+  if (showScanner) {
+    return (<><div className="mx-auto h-screen max-w-lg"><ScannerScreen onBack={() => setShowScanner(false)} /></div>{incomingOverlay}</>);
+  }
 
   if (activeChat) {
     return (
@@ -321,6 +326,9 @@ export default function Index() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setShowStarred(true)}>
                   <Star className="mr-2 h-4 w-4" /> Starred
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowScanner(true)}>
+                  <ScanLine className="mr-2 h-4 w-4" /> Scanner
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setTab('settings')}>

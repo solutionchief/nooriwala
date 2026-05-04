@@ -946,7 +946,9 @@ export type Database = {
           id: string
           is_online: boolean
           last_seen: string | null
+          last_seen_visibility: string
           phone: string | null
+          profile_photo_visibility: string
           show_last_seen: boolean
           show_profile_photo: boolean
           show_read_receipts: boolean
@@ -962,7 +964,9 @@ export type Database = {
           id?: string
           is_online?: boolean
           last_seen?: string | null
+          last_seen_visibility?: string
           phone?: string | null
+          profile_photo_visibility?: string
           show_last_seen?: boolean
           show_profile_photo?: boolean
           show_read_receipts?: boolean
@@ -978,7 +982,9 @@ export type Database = {
           id?: string
           is_online?: boolean
           last_seen?: string | null
+          last_seen_visibility?: string
           phone?: string | null
+          profile_photo_visibility?: string
           show_last_seen?: boolean
           show_profile_photo?: boolean
           show_read_receipts?: boolean

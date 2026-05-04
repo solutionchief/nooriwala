@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Check, Palette, Image as ImageIcon, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Check, Palette, Image as ImageIcon, MessageCircle, Camera } from 'lucide-react';
 import { THEMES, WALLPAPERS, CHAT_BACKGROUNDS, loadPrefs, savePrefs, type AppearancePrefs } from '@/lib/appearance';
+import { PHOTO_WALLPAPERS } from '@/lib/photoWallpapers';
 
 interface Props { onBack: () => void; }
 
 export default function AppearanceScreen({ onBack }: Props) {
   const [prefs, setPrefs] = useState<AppearancePrefs>(() => loadPrefs());
 
-  useEffect(() => { savePrefs(prefs); }, [prefs]);
+  useEffect(() => {
+    // Expose photo wallpaper URLs for appearance.ts to resolve
+    (window as any).__PHOTO_WP_URL = Object.fromEntries(PHOTO_WALLPAPERS.map(p => [p.id, p.url]));
+    savePrefs(prefs);
+  }, [prefs]);
 
   const Section = ({ icon: Icon, title, subtitle, children }: any) => (
     <div className="space-y-2">
@@ -94,6 +99,36 @@ export default function AppearanceScreen({ onBack }: Props) {
                   <div className="absolute inset-x-0 bottom-0 bg-background/70 px-1.5 py-1 text-[10px] font-medium text-foreground">{cb.name}</div>
                   {sel && (
                     <div className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
+                      <Check className="h-3 w-3 text-primary-foreground" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+
+        <Section icon={Camera} title="Photo Wallpapers" subtitle="Use a real photo as chat background (overrides chat background)">
+          <div className="grid grid-cols-3 gap-2.5">
+            <button
+              onClick={() => setPrefs(p => ({ ...p, photoWallpaperId: null }))}
+              className={`relative aspect-square rounded-xl border-2 overflow-hidden transition-all flex items-center justify-center ${!prefs.photoWallpaperId ? 'border-primary' : 'border-border'}`}
+              style={{ background: 'hsl(var(--card))' }}
+            >
+              <span className="text-xs font-semibold text-muted-foreground">None</span>
+            </button>
+            {PHOTO_WALLPAPERS.map(pw => {
+              const sel = prefs.photoWallpaperId === pw.id;
+              return (
+                <button
+                  key={pw.id}
+                  onClick={() => setPrefs(p => ({ ...p, photoWallpaperId: pw.id }))}
+                  className={`relative aspect-square rounded-xl border-2 overflow-hidden transition-all ${sel ? 'border-primary' : 'border-border'}`}
+                >
+                  <img src={pw.url} alt={pw.name} loading="lazy" className="h-full w-full object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 bg-background/70 px-1.5 py-1 text-[10px] font-medium text-foreground">{pw.name}</div>
+                  {sel && (
+                    <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
                       <Check className="h-3 w-3 text-primary-foreground" />
                     </div>
                   )}
