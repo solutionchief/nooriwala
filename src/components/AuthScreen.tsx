@@ -226,7 +226,7 @@ export default function AuthScreen({ onBack }: AuthScreenProps) {
             <div className="mb-4 flex items-start gap-2 rounded-lg bg-warning/10 p-3">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
               <p className="text-xs text-muted-foreground">
-                <strong className="text-foreground">Important:</strong> Messages on Chief Messenger cannot be erased after sending. What you send, stays seen.
+                <strong className="text-foreground">Important:</strong> Messages on Noori Wala cannot be erased after sending. What you send, stays seen.
               </p>
             </div>
 
@@ -263,7 +263,7 @@ export default function AuthScreen({ onBack }: AuthScreenProps) {
             <div className="mb-4 flex items-start gap-2 rounded-lg bg-warning/10 p-3">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
               <p className="text-xs text-muted-foreground">
-                <strong className="text-foreground">Important:</strong> Messages on Chief Messenger cannot be erased after sending. What you send, stays seen.
+                <strong className="text-foreground">Important:</strong> Messages on Noori Wala cannot be erased after sending. What you send, stays seen.
               </p>
             </div>
             <Button

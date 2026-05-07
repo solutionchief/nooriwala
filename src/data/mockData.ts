@@ -5,7 +5,7 @@ export const currentUser: UserProfile = {
   phone: '+1234567890',
   display_name: 'You',
   avatar_url: undefined,
-  about: 'Hey there! I am using Chief Messenger',
+  about: 'Hey there! I am using Noori Wala',
   is_online: true,
   show_last_seen: true,
   show_read_receipts: true,
@@ -38,7 +38,7 @@ const contacts: UserProfile[] = [
     id: 'user-3',
     phone: '+1555666777',
     display_name: 'Emily Rodriguez',
-    about: 'Chief Messenger is amazing!',
+    about: 'Noori Wala is amazing!',
     is_online: true,
     show_last_seen: true,
     show_read_receipts: true,
@@ -73,7 +73,7 @@ const now = Date.now();
 
 export const mockMessages: Record<string, Message[]> = {
   'conv-1': [
-    { id: 'm1', conversation_id: 'conv-1', sender_id: 'user-1', content: 'Hey! Have you tried the new Chief Messenger?', content_type: 'text', status: 'read', deleted_by_sender: false, visible_to_receiver: true, reactions: [], created_at: new Date(now - 3600000).toISOString() },
+    { id: 'm1', conversation_id: 'conv-1', sender_id: 'user-1', content: 'Hey! Have you tried the new Noori Wala?', content_type: 'text', status: 'read', deleted_by_sender: false, visible_to_receiver: true, reactions: [], created_at: new Date(now - 3600000).toISOString() },
     { id: 'm2', conversation_id: 'conv-1', sender_id: 'current-user', content: 'Yes! I love that messages can\'t be deleted. Finally some accountability!', content_type: 'text', status: 'read', deleted_by_sender: false, visible_to_receiver: true, reactions: [{ user_id: 'user-1', emoji: '❤️' }], created_at: new Date(now - 3500000).toISOString() },
     { id: 'm3', conversation_id: 'conv-1', sender_id: 'user-1', content: 'Right? No more "This message was deleted" mystery 😂', content_type: 'text', status: 'read', deleted_by_sender: false, visible_to_receiver: true, reactions: [], created_at: new Date(now - 3400000).toISOString() },
     { id: 'm4', conversation_id: 'conv-1', sender_id: 'current-user', content: 'Say it once. It stays. 💪', content_type: 'text', status: 'delivered', deleted_by_sender: false, visible_to_receiver: true, reactions: [], created_at: new Date(now - 300000).toISOString() },
@@ -90,7 +90,7 @@ export const mockMessages: Record<string, Message[]> = {
     { id: 'm9', conversation_id: 'conv-4', sender_id: 'current-user', content: 'The quarterly report is ready for review', content_type: 'text', status: 'sent', deleted_by_sender: false, visible_to_receiver: true, reactions: [], created_at: new Date(now - 86400000).toISOString() },
   ],
   'conv-5': [
-    { id: 'm10', conversation_id: 'conv-5', sender_id: 'user-5', content: 'Welcome to Chief Messenger! 🎉', content_type: 'text', status: 'read', deleted_by_sender: false, visible_to_receiver: true, reactions: [], created_at: new Date(now - 172800000).toISOString() },
+    { id: 'm10', conversation_id: 'conv-5', sender_id: 'user-5', content: 'Welcome to Noori Wala! 🎉', content_type: 'text', status: 'read', deleted_by_sender: false, visible_to_receiver: true, reactions: [], created_at: new Date(now - 172800000).toISOString() },
   ],
 };
 
@@ -136,7 +136,7 @@ export const mockStatuses: Status[] = [
     id: 'status-3',
     user_id: 'user-5',
     user: contacts[4],
-    content: 'Accountability in messaging matters. That\'s why I use Chief Messenger.',
+    content: 'Accountability in messaging matters. That\'s why I use Noori Wala.',
     content_type: 'text',
     background_color: 'from-emerald-600 to-teal-700',
     created_at: new Date(now - 14400000).toISOString(),

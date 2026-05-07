@@ -131,7 +131,7 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
           <GeneralRow icon={Bell} label="Notifications" desc="Tones, ringtones & vibration" onClick={() => setSub('notif')} />
           <GeneralRow icon={Palette} label="Appearance" desc="Themes, wallpapers, photos & chat backgrounds" onClick={() => setSub('appearance')} />
           <GeneralRow icon={HelpCircle} label="Help" desc="FAQ, contact us, policies" onClick={() => setSub('help')} />
-          <GeneralRow icon={Info} label="About" desc="Chief Messenger v1.0.0" onClick={() => setSub('about')} last />
+          <GeneralRow icon={Info} label="About" desc="Noori Wala v1.0.0" onClick={() => setSub('about')} last />
         </div>
       </div>
 
@@ -139,7 +139,7 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
         <LogOut className="h-5 w-5" /> Sign Out
       </button>
 
-      <p className="text-center text-xs text-muted-foreground pb-4">Chief Messenger v1.0.0 • Say it once. It stays.</p>
+      <p className="text-center text-xs text-muted-foreground pb-4">Noori Wala v1.0.0 • Say it once. It stays.</p>
 
       {/* Visibility picker */}
       <Dialog open={!!vizPicker} onOpenChange={(o) => !o && setVizPicker(null)}>

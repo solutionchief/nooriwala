@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     try {
       await supabase.rpc("enqueue_email", {
         p_to: email,
-        p_subject: "Your Chief Messenger verification code",
+        p_subject: "Your Noori Wala verification code",
         p_html: `<p>Your verification code is <b style="font-size:22px;letter-spacing:4px">${code}</b></p><p>It expires in 10 minutes.</p>`,
         p_purpose: "transactional",
       });

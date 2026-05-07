@@ -1,5 +1,5 @@
 export const ABOUT_PRESETS: string[] = [
-  'Hey, I am using Chief Messenger',
+  'Hey, I am using Noori Wala',
   'Available',
   'Busy',
   'At work',
