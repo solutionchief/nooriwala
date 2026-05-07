@@ -279,6 +279,15 @@ export default function ChangeNumberScreen({ onBack }: Props) {
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground"><Camera className="h-4 w-4 text-primary" /> Step 3 — Live Selfie</div>
             <p className="text-xs text-muted-foreground">We'll match it against your profile photo. Look at the camera in good lighting.</p>
+            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 space-y-2 text-xs">
+              <p className="font-semibold text-amber-300">⚠️ Warning — Identity verification</p>
+              <p className="text-amber-100/90">
+                You are about to verify a phone number change with a live selfie. Your face image will be compared to your profile photo and stored securely for fraud-prevention. Do not proceed if this device or account is not yours.
+              </p>
+              <p dir="rtl" lang="ur" className="text-amber-100/90 leading-relaxed">
+                ⚠️ تنبیہ — شناختی توثیق:  آپ اپنا فون نمبر تبدیل کرنے کے لیے لائیو سیلفی سے تصدیق کرنے والے ہیں۔ آپ کی تصویر آپ کی پروفائل تصویر سے ملائی جائے گی اور دھوکہ دہی سے تحفظ کے لیے محفوظ رکھی جائے گی۔ اگر یہ ڈیوائس یا اکاؤنٹ آپ کا نہیں ہے تو آگے نہ بڑھیں۔
+              </p>
+            </div>
             <div className="aspect-square overflow-hidden rounded-xl bg-secondary flex items-center justify-center">
               {!streamOn && !selfieBusy ? (
                 <Camera className="h-12 w-12 text-muted-foreground" />

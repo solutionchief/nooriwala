@@ -53,7 +53,7 @@ export default function AppLockGate({ children }: { children: React.ReactNode })
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15 mb-4">
         <Lock className="h-9 w-9 text-primary" />
       </div>
-      <h2 className="text-xl font-bold mb-1">Chief Messenger Locked</h2>
+      <h2 className="text-xl font-bold mb-1">Noori Wala Locked</h2>
       <p className="mb-5 text-sm text-muted-foreground">Enter your PIN to continue</p>
       <input
         autoFocus

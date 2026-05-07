@@ -279,7 +279,7 @@ export default function Index() {
   ];
 
   const totalUnread = conversations.reduce((sum, c) => sum + c.unread_count, 0);
-  const headerTitle = tab === 'chats' ? 'Chief Messenger' : tab === 'calls' ? 'Calls' : tab === 'status' ? 'Status' : tab === 'channels' ? 'Channels' : 'Settings';
+  const headerTitle = tab === 'chats' ? 'Noori Wala' : tab === 'calls' ? 'Calls' : tab === 'status' ? 'Status' : tab === 'channels' ? 'Channels' : 'Settings';
 
   return (
     <>

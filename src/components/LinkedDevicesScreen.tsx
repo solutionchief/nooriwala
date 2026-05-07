@@ -53,7 +53,7 @@ export default function LinkedDevicesScreen({ onBack }: { onBack: () => void }) 
               <>
                 <p className="text-sm font-semibold text-foreground">Linking code</p>
                 <div className="rounded-lg bg-secondary p-4 text-center font-mono text-xl tracking-wider text-primary">{newCode}</div>
-                <p className="text-xs text-muted-foreground">Open Chief Messenger on your other device and enter this code to complete linking.</p>
+                <p className="text-xs text-muted-foreground">Open Noori Wala on your other device and enter this code to complete linking.</p>
                 <Button className="w-full" onClick={() => { setAdding(false); setNewCode(null); }}>Done</Button>
               </>
             ) : (
@@ -82,7 +82,7 @@ export default function LinkedDevicesScreen({ onBack }: { onBack: () => void }) 
           <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
             <Smartphone className="h-10 w-10 text-muted-foreground" />
             <p className="mt-3 font-semibold text-foreground">No linked devices</p>
-            <p className="mt-1 text-sm text-muted-foreground">Use Chief Messenger on web, desktop or tablet by linking this account.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Use Noori Wala on web, desktop or tablet by linking this account.</p>
           </div>
         ) : (
           <ul className="divide-y divide-border">

@@ -12,22 +12,22 @@ export default function AboutScreen({ onBack }: { onBack: () => void }) {
           <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary mb-3">
             <MessageCircle className="h-10 w-10 text-primary-foreground" />
           </div>
-          <h2 className="text-2xl font-extrabold">Chief Messenger</h2>
+          <h2 className="text-2xl font-extrabold">Noori Wala</h2>
           <p className="text-sm text-muted-foreground">Version 1.0.0 (build 100)</p>
           <p className="mt-2 italic text-sm text-primary">Say it once. It stays.</p>
         </div>
 
         <div className="rounded-xl bg-card p-4 space-y-2 text-sm leading-relaxed">
-          <p>Chief Messenger is a fast, private, and powerful messaging app that combines personal communication with business tools.</p>
+          <p>Noori Wala is a fast, private, and powerful messaging app that combines personal communication with business tools.</p>
           <p className="text-muted-foreground">Once a message is sent, it stays — no editing, no "delete for everyone". Your words are permanent and trusted.</p>
         </div>
 
         <div className="rounded-xl bg-card overflow-hidden divide-y divide-border">
           <Row icon={Shield} label="End-to-transport encryption" value="HTTPS + Realtime over TLS" />
           <Row icon={Code} label="Built with" value="React, Capacitor, Lovable Cloud" />
-          <Row icon={Heart} label="Made with care" value="© 2026 Chief Messenger" />
-          <Row icon={Globe} label="Website" value="chiefmessenge.lovable.app"
-               onClick={() => window.open('https://chiefmessenge.lovable.app', '_blank')} />
+          <Row icon={Heart} label="Made with care" value="© 2026 Noori Wala" />
+          <Row icon={Globe} label="Website" value="nooriwala.lovable.app"
+               onClick={() => window.open('https://nooriwala.lovable.app', '_blank')} />
         </div>
 
         <div className="rounded-xl bg-card p-4 space-y-2">
@@ -40,7 +40,7 @@ export default function AboutScreen({ onBack }: { onBack: () => void }) {
           </ul>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground pb-2">Thank you for using Chief Messenger 💚</p>
+        <p className="text-center text-xs text-muted-foreground pb-2">Thank you for using Noori Wala 💚</p>
       </div>
     </div>
   );

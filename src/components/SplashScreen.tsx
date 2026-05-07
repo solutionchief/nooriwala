@@ -22,7 +22,7 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className="mb-8"
       >
-        <img src={appIcon} alt="Chief Messenger" className="h-28 w-28 rounded-3xl shadow-lg shadow-primary/30" width={512} height={512} />
+        <img src={appIcon} alt="Noori Wala" className="h-28 w-28 rounded-3xl shadow-lg shadow-primary/30" width={512} height={512} />
       </motion.div>
 
       <motion.h1
@@ -31,7 +31,7 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
         transition={{ delay: 0.3, duration: 0.5 }}
         className="mb-2 text-4xl font-extrabold tracking-tight text-foreground"
       >
-        Chief Messenger
+        Noori Wala
       </motion.h1>
 
       <motion.p

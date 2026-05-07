@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 const FAQS = [
   { q: 'How do I start a new chat?', a: 'Tap the + floating button on the Chats tab and choose "New Chat". Then pick a contact to begin.' },
-  { q: 'Are messages permanent?', a: 'Yes. Chief Messenger does not allow editing or "Delete for Everyone". Once sent, the recipient always sees the message.' },
+  { q: 'Are messages permanent?', a: 'Yes. Noori Wala does not allow editing or "Delete for Everyone". Once sent, the recipient always sees the message.' },
   { q: 'How do disappearing messages work?', a: 'In a chat, open chat info and enable disappearing messages (24h or 7d). Both sides must be on the same setting.' },
   { q: 'How do I create a group?', a: 'Tap + → New Group, pick members, set name and avatar, then create.' },
   { q: 'How do broadcasts work?', a: 'Broadcasts let you message many people privately at once. Replies come back individually and recipients cannot see each other.' },
@@ -25,12 +25,12 @@ export default function HelpScreen({ onBack }: { onBack: () => void }) {
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         <div className="rounded-xl bg-card overflow-hidden divide-y divide-border">
-          <Row icon={Mail} label="Contact support" value="support@chiefmessenger.app"
-               onClick={() => window.location.href = 'mailto:support@chiefmessenger.app?subject=Chief%20Messenger%20Support'} />
-          <Row icon={Bug} label="Report a problem" value="bugs@chiefmessenger.app"
-               onClick={() => window.location.href = 'mailto:bugs@chiefmessenger.app?subject=Bug%20report'} />
+          <Row icon={Mail} label="Contact support" value="support@nooriwalar.app"
+               onClick={() => window.location.href = 'mailto:support@nooriwalar.app?subject=Chief%20Messenger%20Support'} />
+          <Row icon={Bug} label="Report a problem" value="bugs@nooriwalar.app"
+               onClick={() => window.location.href = 'mailto:bugs@nooriwalar.app?subject=Bug%20report'} />
           <Row icon={MessageCircle} label="Community"
-               onClick={() => window.open('https://chiefmessenge.lovable.app', '_blank')} />
+               onClick={() => window.open('https://nooriwala.lovable.app', '_blank')} />
         </div>
 
         <div>
@@ -49,12 +49,12 @@ export default function HelpScreen({ onBack }: { onBack: () => void }) {
         </div>
 
         <div className="rounded-xl bg-card overflow-hidden divide-y divide-border">
-          <Row icon={Shield} label="Privacy policy" onClick={() => window.open('https://chiefmessenge.lovable.app/privacy', '_blank')} />
-          <Row icon={FileText} label="Terms of service" onClick={() => window.open('https://chiefmessenge.lovable.app/terms', '_blank')} />
-          <Row icon={BookOpen} label="User guide" onClick={() => window.open('https://chiefmessenge.lovable.app/help', '_blank')} />
+          <Row icon={Shield} label="Privacy policy" onClick={() => window.open('https://nooriwala.lovable.app/privacy', '_blank')} />
+          <Row icon={FileText} label="Terms of service" onClick={() => window.open('https://nooriwala.lovable.app/terms', '_blank')} />
+          <Row icon={BookOpen} label="User guide" onClick={() => window.open('https://nooriwala.lovable.app/help', '_blank')} />
         </div>
 
-        <p className="text-center text-xs text-muted-foreground pb-2">Chief Messenger v1.0.0</p>
+        <p className="text-center text-xs text-muted-foreground pb-2">Noori Wala v1.0.0</p>
       </div>
     </div>
   );
