@@ -49,7 +49,7 @@ function MessageStatus({ status }: { status: string }) {
 
 export default function ChatScreen({ conversation, onBack, onTogglePin, onSetTheme, conversations = [] }: ChatScreenProps) {
   const { user } = useAuth();
-  const { messages, loading, sendMessage, deleteForSelf, addReaction, forwardMessage } = useMessages(conversation.id);
+  const { messages, loading, sendMessage, deleteForSelf, deleteForEveryone, addReaction, forwardMessage } = useMessages(conversation.id);
   const { typingUsers, onType, stopTyping } = useTypingIndicator(conversation.id);
   const { isBlocked, blockUser, unblockUser, reportUser } = useBlockedUsers();
   const { replies: quickReplies } = useQuickReplies();
@@ -328,7 +328,24 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
                     </button>
                   ))}
                   {isMine && !msg.deleted_by_sender && (
-                    <button onClick={() => deleteForSelf(msg.id)} className="p-1 text-destructive/60 hover:text-destructive">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-1 text-destructive/60 hover:text-destructive">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => deleteForSelf(msg.id)}>
+                          Delete for me
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => deleteForEveryone(msg.id)} className="text-destructive">
+                          Delete for everyone
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  {!isMine && (
+                    <button onClick={() => deleteForSelf(msg.id)} className="p-1 text-muted-foreground hover:text-destructive" title="Delete for me">
                       <X className="h-3.5 w-3.5" />
                     </button>
                   )}

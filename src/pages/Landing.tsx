@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  MessageCircle, ShieldCheck, Phone, Users, Megaphone, Radio, Briefcase, ScanLine,
+  ShieldCheck, Phone, Users, Megaphone, Radio, Briefcase, ScanLine,
   Lock, Globe2, Sparkles, Smartphone, ArrowRight,
 } from 'lucide-react';
+import MarketingLayout from '@/components/marketing/MarketingLayout';
 
 const FEATURES = [
-  { icon: MessageCircle, t: 'Permanent Messages', d: 'Say it once. It stays. Senders can never delete the receiver’s copy.' },
   { icon: ShieldCheck, t: 'Bank-grade Security', d: 'TLS, RLS, CSP, app lock, audited delete attempts and rate-limited APIs.' },
   { icon: Phone, t: 'HD Calls', d: 'Crystal-clear 1-to-1 and group voice & video, with add-during-call.' },
   { icon: Users, t: 'Groups up to 2,500', d: 'Invite contacts or recent unknown numbers. Admins, roles, announcements.' },
@@ -18,22 +18,8 @@ const FEATURES = [
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-card text-foreground">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 font-bold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">N</span>
-            <span className="text-lg tracking-tight">Noori Wala</span>
-          </Link>
-          <nav className="hidden gap-6 text-sm text-muted-foreground md:flex">
-            <a href="#features" className="hover:text-foreground">Features</a>
-            <a href="#business" className="hover:text-foreground">Business</a>
-            <a href="#security" className="hover:text-foreground">Security</a>
-            <a href="#download" className="hover:text-foreground">Download</a>
-          </nav>
-          <Link to="/app" className="rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground hover:opacity-90">Open app</Link>
-        </div>
-      </header>
+    <MarketingLayout>
+      <div className="bg-gradient-to-b from-background via-background to-card">
 
       {/* Hero — phone-frame on right (web/laptop) */}
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
@@ -154,20 +140,8 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-border bg-card/50">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} Noori Wala. All rights reserved.</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <Link to="/terms">Terms</Link>
-            <Link to="/privacy">Privacy</Link>
-            <Link to="/cookies">Cookies</Link>
-            <Link to="/acceptable-use">Acceptable Use</Link>
-            <Link to="/security">Security</Link>
-            <Link to="/dmca">DMCA</Link>
-            <Link to="/contact">Contact</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </MarketingLayout>
   );
 }
+

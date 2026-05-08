@@ -15,6 +15,15 @@ import AcceptableUse from "./pages/legal/AcceptableUse";
 import Security from "./pages/legal/Security";
 import DMCA from "./pages/legal/DMCA";
 import Contact from "./pages/legal/Contact";
+import Features from "./pages/marketing/Features";
+import Business from "./pages/marketing/Business";
+import Apps from "./pages/marketing/Apps";
+import Help from "./pages/marketing/Help";
+import Blog from "./pages/marketing/Blog";
+import About from "./pages/marketing/About";
+import Careers from "./pages/marketing/Careers";
+import Brand from "./pages/marketing/Brand";
+import Sitemap from "./pages/marketing/Sitemap";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +43,15 @@ const App = () => (
             <Route path="/security" element={<Security />} />
             <Route path="/dmca" element={<DMCA />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/business" element={<Business />} />
+            <Route path="/apps" element={<Apps />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/brand" element={<Brand />} />
+            <Route path="/sitemap" element={<Sitemap />} />
             <Route
               path="/app"
               element={
