@@ -52,7 +52,7 @@ export function useMessages(conversationId: string) {
       reactions: reactionMap[m.id] || [],
     })));
     setLoading(false);
-  }, [conversationId]);
+  }, [conversationId, user?.id]);
 
   useEffect(() => {
     fetchMessages();
