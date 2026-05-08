@@ -133,8 +133,14 @@ export function useMessages(conversationId: string) {
   const deleteForSelf = async (messageId: string) => {
     if (!user) return;
     const target = messages.find(m => m.id === messageId);
-    // Hide from sender only — receiver continues to see the message.
-    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, deleted_by_sender: true } : m));
+    // Hide locally for this user only — receiver continues to see the message.
+    const key = `nw-hidden-${user.id}-${conversationId}`;
+    const hidden: string[] = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!hidden.includes(messageId)) {
+      hidden.push(messageId);
+      localStorage.setItem(key, JSON.stringify(hidden));
+    }
+    setMessages(prev => prev.filter(m => m.id !== messageId));
     await logAudit(messageId, target, 'delete_for_self');
   };
 
