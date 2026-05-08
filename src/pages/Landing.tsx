@@ -140,20 +140,8 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-border bg-card/50">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} Noori Wala. All rights reserved.</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <Link to="/terms">Terms</Link>
-            <Link to="/privacy">Privacy</Link>
-            <Link to="/cookies">Cookies</Link>
-            <Link to="/acceptable-use">Acceptable Use</Link>
-            <Link to="/security">Security</Link>
-            <Link to="/dmca">DMCA</Link>
-            <Link to="/contact">Contact</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </MarketingLayout>
   );
 }
+
