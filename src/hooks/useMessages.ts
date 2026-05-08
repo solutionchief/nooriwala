@@ -45,7 +45,9 @@ export function useMessages(conversationId: string) {
       reactionMap[r.message_id].push({ user_id: r.user_id, emoji: r.emoji });
     });
 
-    setMessages(msgs.map(m => ({
+    const hiddenKey = `nw-hidden-${user?.id}-${conversationId}`;
+    const hidden = new Set<string>(JSON.parse(localStorage.getItem(hiddenKey) || '[]'));
+    setMessages(msgs.filter(m => !hidden.has(m.id)).map(m => ({
       ...m,
       reactions: reactionMap[m.id] || [],
     })));
