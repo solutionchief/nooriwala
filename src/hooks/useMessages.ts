@@ -113,32 +113,42 @@ export function useMessages(conversationId: string) {
     });
   };
 
+  const logAudit = async (messageId: string, target: MessageData | undefined, type: 'delete_for_self' | 'delete_for_everyone') => {
+    try {
+      await supabase.from('message_delete_audit').insert({
+        message_id: messageId,
+        conversation_id: conversationId,
+        attempted_by: user!.id,
+        attempt_type: type,
+        prior_content: target?.content ?? null,
+        prior_content_type: target?.content_type ?? null,
+      });
+    } catch (e) {
+      console.warn('[audit] failed to log delete attempt', e);
+    }
+  };
+
   const deleteForSelf = async (messageId: string) => {
     if (!user) return;
-    // Snapshot prior content for audit trail BEFORE marking deleted.
     const target = messages.find(m => m.id === messageId);
-    // Receiver visibility (visible_to_receiver) is enforced at app layer — we never
-    // touch the message row's content, only flip deleted_by_sender so the receiver
-    // sees the "sender tried to delete this" notice. Messages remain permanent.
+    // Hide from sender only — receiver continues to see the message.
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, deleted_by_sender: true } : m));
+    await logAudit(messageId, target, 'delete_for_self');
+  };
+
+  // Per Noori Wala policy: senders may attempt "delete for everyone", but if the
+  // receiver has already received the message, the receiver continues to see it.
+  // We flip deleted_by_sender so the sender's UI hides it; the receiver's UI keeps
+  // showing the original content. Every attempt is audited.
+  const deleteForEveryone = async (messageId: string) => {
+    if (!user) return;
+    const target = messages.find(m => m.id === messageId);
     await supabase
       .from('messages')
       .update({ deleted_by_sender: true })
       .eq('id', messageId)
       .eq('sender_id', user.id);
-    // Best-effort audit log; don't block UI on failure.
-    try {
-      await supabase.from('message_delete_audit').insert({
-        message_id: messageId,
-        conversation_id: conversationId,
-        attempted_by: user.id,
-        attempt_type: 'delete_for_self',
-        prior_content: target?.content ?? null,
-        prior_content_type: target?.content_type ?? null,
-      });
-    } catch (e) {
-      // Non-fatal: audit failure should never break the UI flow.
-      console.warn('[audit] failed to log delete attempt', e);
-    }
+    await logAudit(messageId, target, 'delete_for_everyone');
   };
 
   // Send media that was already uploaded (e.g. by CameraCaptureScreen) to
@@ -170,5 +180,5 @@ export function useMessages(conversationId: string) {
     fetchMessages();
   };
 
-  return { messages, loading, sendMessage, deleteForSelf, addReaction, forwardMessage };
+  return { messages, loading, sendMessage, deleteForSelf, deleteForEveryone, addReaction, forwardMessage, sendCapturedMediaTo };
 }
