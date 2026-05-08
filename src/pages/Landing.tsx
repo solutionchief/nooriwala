@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  MessageCircle, ShieldCheck, Phone, Users, Megaphone, Radio, Briefcase, ScanLine,
+  ShieldCheck, Phone, Users, Megaphone, Radio, Briefcase, ScanLine,
   Lock, Globe2, Sparkles, Smartphone, ArrowRight,
 } from 'lucide-react';
+import MarketingLayout from '@/components/marketing/MarketingLayout';
 
 const FEATURES = [
-  { icon: MessageCircle, t: 'Permanent Messages', d: 'Say it once. It stays. Senders can never delete the receiver’s copy.' },
   { icon: ShieldCheck, t: 'Bank-grade Security', d: 'TLS, RLS, CSP, app lock, audited delete attempts and rate-limited APIs.' },
   { icon: Phone, t: 'HD Calls', d: 'Crystal-clear 1-to-1 and group voice & video, with add-during-call.' },
   { icon: Users, t: 'Groups up to 2,500', d: 'Invite contacts or recent unknown numbers. Admins, roles, announcements.' },
