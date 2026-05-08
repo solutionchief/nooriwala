@@ -18,22 +18,8 @@ const FEATURES = [
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-card text-foreground">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 font-bold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">N</span>
-            <span className="text-lg tracking-tight">Noori Wala</span>
-          </Link>
-          <nav className="hidden gap-6 text-sm text-muted-foreground md:flex">
-            <a href="#features" className="hover:text-foreground">Features</a>
-            <a href="#business" className="hover:text-foreground">Business</a>
-            <a href="#security" className="hover:text-foreground">Security</a>
-            <a href="#download" className="hover:text-foreground">Download</a>
-          </nav>
-          <Link to="/app" className="rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground hover:opacity-90">Open app</Link>
-        </div>
-      </header>
+    <MarketingLayout>
+      <div className="bg-gradient-to-b from-background via-background to-card">
 
       {/* Hero — phone-frame on right (web/laptop) */}
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
