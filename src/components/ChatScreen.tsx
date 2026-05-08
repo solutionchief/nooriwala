@@ -49,7 +49,7 @@ function MessageStatus({ status }: { status: string }) {
 
 export default function ChatScreen({ conversation, onBack, onTogglePin, onSetTheme, conversations = [] }: ChatScreenProps) {
   const { user } = useAuth();
-  const { messages, loading, sendMessage, deleteForSelf, addReaction, forwardMessage } = useMessages(conversation.id);
+  const { messages, loading, sendMessage, deleteForSelf, deleteForEveryone, addReaction, forwardMessage } = useMessages(conversation.id);
   const { typingUsers, onType, stopTyping } = useTypingIndicator(conversation.id);
   const { isBlocked, blockUser, unblockUser, reportUser } = useBlockedUsers();
   const { replies: quickReplies } = useQuickReplies();
