@@ -8,6 +8,7 @@ import Index from "./pages/Index.tsx";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AppLockGate from "@/components/AppLockGate";
+import TwoFactorGate from "@/components/TwoFactorGate";
 import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
 import Cookies from "./pages/legal/Cookies";
@@ -55,9 +56,11 @@ const App = () => (
             <Route
               path="/app"
               element={
-                <AppLockGate>
+              <AppLockGate>
+                <TwoFactorGate>
                   <Index />
-                </AppLockGate>
+                </TwoFactorGate>
+              </AppLockGate>
               }
             />
             <Route path="*" element={<NotFound />} />
