@@ -154,9 +154,18 @@ export default function TwoFactorGate({ children }: { children: React.ReactNode 
           <Button onClick={verifyCode} disabled={code.length < 6 || busy} className="py-6 text-lg font-bold" size="lg">
             {busy ? 'Verifying…' : 'Verify & Continue'}
           </Button>
-          <button onClick={() => { setSent(false); setCode(''); }} className="mt-4 text-center text-sm text-primary">
-            Resend or change email
-          </button>
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <button
+              onClick={() => { if (cooldown <= 0) sendCode(); }}
+              disabled={cooldown > 0 || busy}
+              className="text-primary disabled:text-muted-foreground"
+            >
+              {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
+            </button>
+            <button onClick={() => { setSent(false); setCode(''); }} className="text-primary">
+              Change email
+            </button>
+          </div>
         </>
       )}
 
