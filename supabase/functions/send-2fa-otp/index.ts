@@ -1,4 +1,5 @@
 // Sends a 6-digit verification code to a Gmail address for 2-step verification.
+// Includes server-side rate limiting (max 3 sends per 10 min, 60s cooldown).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -37,6 +38,34 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+    // Rate-limit: per user, purpose=two_factor
+    const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data: recent } = await admin
+      .from("otp_rate_limits")
+      .select("attempted_at")
+      .eq("user_id", user.id)
+      .eq("purpose", "two_factor")
+      .gte("attempted_at", since)
+      .order("attempted_at", { ascending: false });
+
+    if (recent && recent.length >= 3) {
+      return new Response(JSON.stringify({ error: "Too many requests. Try again in 10 minutes." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (recent && recent[0]) {
+      const lastMs = new Date(recent[0].attempted_at).getTime();
+      const wait = 60_000 - (Date.now() - lastMs);
+      if (wait > 0) {
+        return new Response(JSON.stringify({ error: `Please wait ${Math.ceil(wait/1000)}s before requesting another code.`, cooldown: Math.ceil(wait/1000) }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const code = String(Math.floor(100000 + Math.random() * 900000));
     const code_hash = await sha256(code);
     const expires_at = new Date(Date.now() + 10 * 60 * 1000).toISOString();
@@ -48,6 +77,7 @@ Deno.serve(async (req) => {
       purpose: "two_factor",
       expires_at,
     });
+    await admin.from("otp_rate_limits").insert({ user_id: user.id, purpose: "two_factor" });
 
     try {
       await admin.rpc("enqueue_email", {
