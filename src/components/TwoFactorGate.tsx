@@ -18,6 +18,13 @@ export default function TwoFactorGate({ children }: { children: React.ReactNode 
   const [code, setCode] = useState('');
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   const sessionKey = user ? `nw-2fa-passed-${user.id}` : '';
   const passed = sessionKey ? sessionStorage.getItem(sessionKey) === '1' : false;
@@ -58,12 +65,19 @@ export default function TwoFactorGate({ children }: { children: React.ReactNode 
       return;
     }
     setBusy(true);
-    const { error } = await supabase.functions.invoke('send-2fa-otp', {
+    const { data, error } = await supabase.functions.invoke('send-2fa-otp', {
       body: { email: email.trim().toLowerCase() },
     });
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      const msg = (data as any)?.error || error.message;
+      const cd = (data as any)?.cooldown;
+      if (cd) setCooldown(cd);
+      toast.error(msg);
+      return;
+    }
     setSent(true);
+    setCooldown(60);
     toast.success('Verification code sent to your Gmail');
   };
 
