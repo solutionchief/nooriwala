@@ -952,6 +952,8 @@ export type Database = {
           show_last_seen: boolean
           show_profile_photo: boolean
           show_read_receipts: boolean
+          two_factor_email: string | null
+          two_factor_enabled: boolean
           updated_at: string
           user_id: string
         }
@@ -970,6 +972,8 @@ export type Database = {
           show_last_seen?: boolean
           show_profile_photo?: boolean
           show_read_receipts?: boolean
+          two_factor_email?: string | null
+          two_factor_enabled?: boolean
           updated_at?: string
           user_id: string
         }
@@ -988,6 +992,8 @@ export type Database = {
           show_last_seen?: boolean
           show_profile_photo?: boolean
           show_read_receipts?: boolean
+          two_factor_email?: string | null
+          two_factor_enabled?: boolean
           updated_at?: string
           user_id?: string
         }
