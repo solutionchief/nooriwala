@@ -18,6 +18,13 @@ export default function TwoFactorGate({ children }: { children: React.ReactNode 
   const [code, setCode] = useState('');
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   const sessionKey = user ? `nw-2fa-passed-${user.id}` : '';
   const passed = sessionKey ? sessionStorage.getItem(sessionKey) === '1' : false;
@@ -58,12 +65,19 @@ export default function TwoFactorGate({ children }: { children: React.ReactNode 
       return;
     }
     setBusy(true);
-    const { error } = await supabase.functions.invoke('send-2fa-otp', {
+    const { data, error } = await supabase.functions.invoke('send-2fa-otp', {
       body: { email: email.trim().toLowerCase() },
     });
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      const msg = (data as any)?.error || error.message;
+      const cd = (data as any)?.cooldown;
+      if (cd) setCooldown(cd);
+      toast.error(msg);
+      return;
+    }
     setSent(true);
+    setCooldown(60);
     toast.success('Verification code sent to your Gmail');
   };
 
@@ -140,9 +154,18 @@ export default function TwoFactorGate({ children }: { children: React.ReactNode 
           <Button onClick={verifyCode} disabled={code.length < 6 || busy} className="py-6 text-lg font-bold" size="lg">
             {busy ? 'Verifying…' : 'Verify & Continue'}
           </Button>
-          <button onClick={() => { setSent(false); setCode(''); }} className="mt-4 text-center text-sm text-primary">
-            Resend or change email
-          </button>
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <button
+              onClick={() => { if (cooldown <= 0) sendCode(); }}
+              disabled={cooldown > 0 || busy}
+              className="text-primary disabled:text-muted-foreground"
+            >
+              {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
+            </button>
+            <button onClick={() => { setSent(false); setCode(''); }} className="text-primary">
+              Change email
+            </button>
+          </div>
         </>
       )}
 

@@ -826,6 +826,27 @@ export type Database = {
           },
         ]
       }
+      otp_rate_limits: {
+        Row: {
+          attempted_at: string
+          id: string
+          purpose: string
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: string
+          purpose: string
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: string
+          purpose?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       outbox_messages: {
         Row: {
           client_id: string
@@ -1050,6 +1071,36 @@ export type Database = {
           reported_user_id?: string
           reporter_id?: string
           status?: string
+        }
+        Relationships: []
+      }
+      security_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }

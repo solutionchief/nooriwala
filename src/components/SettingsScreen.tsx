@@ -12,12 +12,14 @@ import HelpScreen from './HelpScreen';
 import AboutScreen from './AboutScreen';
 import AppLockScreen from './AppLockScreen';
 import ScannerScreen from './ScannerScreen';
+import SecurityCenterScreen from './SecurityCenterScreen';
+import ChangeTwoFactorEmailScreen from './ChangeTwoFactorEmailScreen';
 import { ABOUT_PRESETS, ABOUT_MAX } from '@/lib/aboutPresets';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-type Sub = null | 'business' | 'metrics' | 'change' | 'appearance' | 'notif' | 'help' | 'about' | 'lock' | 'scanner';
+type Sub = null | 'business' | 'metrics' | 'change' | 'appearance' | 'notif' | 'help' | 'about' | 'lock' | 'scanner' | 'security' | 'change2fa';
 
 interface SettingsScreenProps { onSignOut: () => void; }
 
@@ -45,6 +47,8 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
   if (sub === 'about') return <AboutScreen onBack={() => setSub(null)} />;
   if (sub === 'lock') return <AppLockScreen onBack={() => setSub(null)} />;
   if (sub === 'scanner') return <ScannerScreen onBack={() => setSub(null)} />;
+  if (sub === 'security') return <SecurityCenterScreen onBack={() => setSub(null)} onChangeEmail={() => setSub('change2fa')} />;
+  if (sub === 'change2fa') return <ChangeTwoFactorEmailScreen onBack={() => setSub('security')} />;
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -120,6 +124,7 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
         </div>
       </div>
 
+      <ActionRow icon={Shield} label="Security Center" desc="2FA status, audit log, change Gmail" onClick={() => setSub('security')} />
       <ActionRow icon={Phone} label="Change Phone Number" desc="2-step verification: phone + email + selfie" onClick={() => setSub('change')} />
       <ActionRow icon={Briefcase} label="Business Tools" desc="Profile, catalog, quick replies, labels" onClick={() => setSub('business')} />
       <ActionRow icon={ScanLine} label="Document Scanner" desc="Scan, enhance and export PDFs" onClick={() => setSub('scanner')} />

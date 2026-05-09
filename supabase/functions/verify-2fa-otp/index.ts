@@ -1,5 +1,6 @@
 // Verifies a 6-digit Gmail OTP for 2-step verification and, on success,
 // enables 2FA on the user's profile (storing the verified Gmail).
+// Logs all attempts to security_events.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -14,6 +15,8 @@ async function sha256(s: string) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+  const ua = req.headers.get("user-agent") ?? null;
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
     const userClient = createClient(
@@ -40,6 +43,18 @@ Deno.serve(async (req) => {
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const code_hash = await sha256(String(code));
 
+    const logEvent = async (event_type: string, metadata: Record<string, unknown> = {}) => {
+      try {
+        await admin.from("security_events").insert({
+          user_id: user.id,
+          event_type,
+          metadata: { email: String(email).toLowerCase(), mode, ...metadata },
+          ip_address: ip,
+          user_agent: ua,
+        });
+      } catch (_) { /* swallow */ }
+    };
+
     const { data: rows } = await admin
       .from("email_otp_codes")
       .select("id, expires_at, consumed")
@@ -52,18 +67,21 @@ Deno.serve(async (req) => {
 
     const row = rows?.[0];
     if (!row) {
+      await logEvent("2fa_challenge_failed", { reason: "invalid_code" });
       return new Response(JSON.stringify({ error: "Invalid code" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     if (row.consumed) {
+      await logEvent("2fa_challenge_failed", { reason: "code_used" });
       return new Response(JSON.stringify({ error: "Code already used" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     if (new Date(row.expires_at).getTime() < Date.now()) {
+      await logEvent("2fa_challenge_failed", { reason: "expired" });
       return new Response(JSON.stringify({ error: "Code expired" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -72,12 +90,14 @@ Deno.serve(async (req) => {
 
     await admin.from("email_otp_codes").update({ consumed: true }).eq("id", row.id);
 
-    // mode "enroll" stores the gmail and enables 2FA. mode "challenge" only validates.
-    if (mode === "enroll") {
+    if (mode === "enroll" || mode === "change") {
       await admin
         .from("profiles")
         .update({ two_factor_email: String(email).toLowerCase(), two_factor_enabled: true })
         .eq("user_id", user.id);
+      await logEvent(mode === "enroll" ? "2fa_enrolled" : "2fa_email_changed");
+    } else {
+      await logEvent("2fa_challenge_succeeded");
     }
 
     return new Response(JSON.stringify({ ok: true }), {
