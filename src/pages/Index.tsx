@@ -16,6 +16,7 @@ import CallsScreen from '@/components/CallsScreen';
 import CallScreen from '@/components/CallScreen';
 import IncomingCallOverlay from '@/components/IncomingCallOverlay';
 import ContactPicker, { type PickerMode } from '@/components/ContactPicker';
+import NewCallPicker from '@/components/NewCallPicker';
 import StarredMessagesScreen from '@/components/StarredMessagesScreen';
 import LinkedDevicesScreen from '@/components/LinkedDevicesScreen';
 import CommunitiesScreen from '@/components/CommunitiesScreen';
@@ -54,6 +55,7 @@ export default function Index() {
   const [showCamera, setShowCamera] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
+  const [showCallPicker, setShowCallPicker] = useState(false);
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
   const { conversations, loading: convsLoading, togglePin, toggleArchive, toggleMute, markUnread, setChatTheme } = useConversations();
   const { startCall, incomingCall, dismissIncoming, endCall } = useCalls();
@@ -125,6 +127,7 @@ export default function Index() {
 
   const handleStartCall = async (otherId: string, name: string, avatar: string | null, type: 'audio' | 'video') => {
     setPickerMode(null);
+    setShowCallPicker(false);
     if (!online) {
       enqueuePendingCall({ calleeId: otherId, calleeName: name, calleeAvatar: avatar, callType: type });
       toast.info('You are offline — call queued and will retry when online');
@@ -137,6 +140,29 @@ export default function Index() {
       if (call) setActiveCall({ callId: call.id, calleeId: otherId, calleeName: name, calleeAvatar: avatar, callType: type });
     } catch (e: any) {
       toast.error(e.message || 'Could not start call');
+    }
+  };
+
+  const handleStartGroupCall = async (participants: { userId: string; name: string; avatar: string | null }[], type: 'audio' | 'video') => {
+    setShowCallPicker(false);
+    if (!online) {
+      // Queue first participant for now (group call queuing could be enhanced later)
+      const first = participants[0];
+      enqueuePendingCall({ calleeId: first.userId, calleeName: first.name, calleeAvatar: first.avatar, callType: type });
+      toast.info('You are offline — call queued and will retry when online');
+      setTab('calls');
+      return;
+    }
+    // For now, start a call with the first participant (group calls would need backend support)
+    // This is a placeholder - real group calls would create a group call room
+    const first = participants[0];
+    toast.info(`Starting ${type} call with ${participants.length} participants`);
+    try {
+      const convId = await findOrCreateDirect(first.userId);
+      const call = await startCall(first.userId, type, convId || undefined);
+      if (call) setActiveCall({ callId: call.id, calleeId: first.userId, calleeName: `Group (${participants.length})`, calleeAvatar: first.avatar, callType: type });
+    } catch (e: any) {
+      toast.error(e.message || 'Could not start group call');
     }
   };
 
@@ -251,6 +277,21 @@ export default function Index() {
   }
   if (showScanner) {
     return (<><div className="mx-auto h-screen max-w-lg"><ScannerScreen onBack={() => setShowScanner(false)} /></div>{incomingOverlay}</>);
+  }
+
+  if (showCallPicker) {
+    return (
+      <>
+        <div className="mx-auto h-screen max-w-lg">
+          <NewCallPicker
+            onBack={() => setShowCallPicker(false)}
+            onStartCall={handleStartCall}
+            onStartGroupCall={handleStartGroupCall}
+          />
+        </div>
+        {incomingOverlay}
+      </>
+    );
   }
 
   if (activeChat) {
@@ -401,6 +442,19 @@ export default function Index() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
+      )}
+
+      {/* Floating + for Calls tab — opens NewCallPicker with audio/video/group options */}
+      {tab === 'calls' && (
+        <div className="pointer-events-none absolute bottom-20 right-4 z-20">
+          <button
+            onClick={() => setShowCallPicker(true)}
+            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95"
+            aria-label="New Call"
+          >
+            <Plus className="h-6 w-6" />
+          </button>
         </div>
       )}
 
