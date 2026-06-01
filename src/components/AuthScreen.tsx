@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, ArrowLeft, AlertTriangle, Mail, ChevronDown, Search, Phone } from 'lucide-react';
+import { MessageCircle, ArrowLeft, Mail, ChevronDown, Search, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
