@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image, Reply, Forward, Ban, Flag, Clock, X, Users, Tag, WifiOff, Loader2, Phone, Video } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image, Reply, Forward, Ban, Flag, Clock, X, Users, Tag, WifiOff, Loader2, Phone, Video, ScanLine, FileText, Eye, EyeOff } from 'lucide-react';
+import { imagesToPdf } from '@/lib/scanToPdf';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ChatList';
 import { useMessages, type MessageData } from '@/hooks/useMessages';
@@ -69,6 +70,18 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
   const scrollRef = useRef<HTMLDivElement>(null);
   const themeInputRef = useRef<HTMLInputElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
+  const scanInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
+  const showDeletedKey = `nw-show-deleted-${user?.id}-${conversation.id}`;
+  const [showDeleted, setShowDeleted] = useState<boolean>(() =>
+    typeof window !== 'undefined' && localStorage.getItem(showDeletedKey) === '1'
+  );
+  const toggleShowDeleted = () => {
+    const next = !showDeleted;
+    setShowDeleted(next);
+    localStorage.setItem(showDeletedKey, next ? '1' : '0');
+    toast.success(next ? 'You will see messages even if the sender deletes them' : 'Deleted messages will be hidden');
+  };
 
   const blocked = isBlocked(conversation.participant_user_id);
   const suggestions = useMemo(() => {
@@ -90,16 +103,39 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
     setReplyTo(null);
   };
 
+  const uploadAndSend = async (file: File, kind: 'image' | 'video' | 'document', caption?: string) => {
+    if (!user) return;
+    const safeName = file.name.replace(/[^\w.\-]+/g, '_');
+    const path = `${user.id}/${Date.now()}-${safeName}`;
+    await supabase.storage.from('message-media').upload(path, file, { contentType: file.type || undefined });
+    const { data: { publicUrl } } = supabase.storage.from('message-media').getPublicUrl(path);
+    sendMessage(caption || file.name, kind, publicUrl);
+  };
+
   const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
-    const ext = file.name.split('.').pop();
-    const path = `${user.id}/${Date.now()}.${ext}`;
-    await supabase.storage.from('message-media').upload(path, file);
-    const { data: { publicUrl } } = supabase.storage.from('message-media').getPublicUrl(path);
-    const type = file.type.startsWith('video') ? 'video' : file.type.startsWith('image') ? 'image' : 'document';
-    sendMessage(file.name, type, publicUrl);
+    if (!file) return;
+    const kind = file.type.startsWith('video') ? 'video' : file.type.startsWith('image') ? 'image' : 'document';
+    await uploadAndSend(file, kind);
     e.target.value = '';
+  };
+
+  // Built-in scanner → PDF. Camera capture on mobile (capture="environment"),
+  // file picker on desktop. Multiple images are stitched into one PDF.
+  const handleScanToPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    try {
+      toast.message('Converting to PDF…');
+      const blob = await imagesToPdf(files);
+      const pdfFile = new File([blob], `scan-${Date.now()}.pdf`, { type: 'application/pdf' });
+      await uploadAndSend(pdfFile, 'document', pdfFile.name);
+      toast.success('PDF sent');
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not build PDF');
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const handleForward = async (targetConvId: string) => {
@@ -222,6 +258,10 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
               <Tag className="mr-2 h-4 w-4" />
               Manage Labels
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleShowDeleted}>
+              {showDeleted ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
+              {showDeleted ? 'Hide deleted messages' : 'Show deleted messages'}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             {conversation.type !== 'group' && (
               <>
@@ -245,7 +285,11 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
         {loading && <p className="text-center text-sm text-muted-foreground">Loading...</p>}
         {messages.map((msg) => {
           const isMine = msg.sender_id === user?.id;
-          const showDeleteNotice = msg.deleted_by_sender && !isMine;
+          // Receiver-side preference: hide the message entirely when the sender
+          // has flagged delete-for-everyone, unless this receiver has opted in
+          // to keep seeing such messages via the chat menu toggle.
+          if (!isMine && msg.deleted_by_sender && !showDeleted) return null;
+          const showDeleteNotice = msg.deleted_by_sender && !isMine && showDeleted;
           const repliedMsg = getReplyContent(msg.reply_to_id);
           const isForwarded = !!(msg as any).forwarded_from_id;
 
@@ -283,7 +327,7 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
                 {showDeleteNotice && (
                   <div className="mb-1 flex items-center gap-1 text-xs text-warning/80">
                     <AlertCircle className="h-3 w-3" />
-                    Sender tried to delete this
+                    Sender tried to delete this — visible because you enabled "Show deleted messages"
                   </div>
                 )}
 
@@ -293,6 +337,10 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
                   <img src={msg.media_url} alt="" className="rounded-lg max-w-full" loading="lazy" />
                 ) : msg.content_type === 'video' && msg.media_url ? (
                   <video src={msg.media_url} controls className="rounded-lg max-w-full" />
+                ) : msg.content_type === 'document' && msg.media_url ? (
+                  <a href={msg.media_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg bg-background/20 px-3 py-2 text-sm hover:underline">
+                    <FileText className="h-4 w-4" /> {msg.content || 'Document'}
+                  </a>
                 ) : (
                   <p className="text-sm leading-relaxed">{msg.content}</p>
                 )}
@@ -397,10 +445,18 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
         <div className="border-t border-border bg-card px-3 py-3">
           <div className="flex items-center gap-2">
             <button className="p-2 text-muted-foreground"><Smile className="h-5 w-5" /></button>
-            <button onClick={() => mediaInputRef.current?.click()} className="p-2 text-muted-foreground">
+            <button onClick={() => mediaInputRef.current?.click()} className="p-2 text-muted-foreground" title="Attach file">
               <Paperclip className="h-5 w-5" />
             </button>
+            <button onClick={() => scanInputRef.current?.click()} className="p-2 text-muted-foreground" title="Scan to PDF (camera)">
+              <ScanLine className="h-5 w-5" />
+            </button>
+            <button onClick={() => docInputRef.current?.click()} className="p-2 text-muted-foreground" title="Images → PDF">
+              <FileText className="h-5 w-5" />
+            </button>
             <input ref={mediaInputRef} type="file" accept="image/*,video/*,.pdf,.doc,.docx" className="hidden" onChange={handleMediaUpload} />
+            <input ref={scanInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScanToPdf} />
+            <input ref={docInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleScanToPdf} />
             <Input
               value={input}
               onChange={e => { setInput(e.target.value); onType(); }}

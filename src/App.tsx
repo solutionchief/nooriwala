@@ -8,7 +8,7 @@ import Index from "./pages/Index.tsx";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AppLockGate from "@/components/AppLockGate";
-import TwoFactorGate from "@/components/TwoFactorGate";
+// TwoFactorGate is intentionally not wrapped here — 2FA is opt-in via Settings.
 import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
 import Cookies from "./pages/legal/Cookies";
@@ -56,11 +56,11 @@ const App = () => (
             <Route
               path="/app"
               element={
-              <AppLockGate>
-                <TwoFactorGate>
+                <AppLockGate>
+                  {/* 2-step verification is optional at sign-up. It is enforced
+                      only inside sensitive flows (e.g. ChangeNumberScreen). */}
                   <Index />
-                </TwoFactorGate>
-              </AppLockGate>
+                </AppLockGate>
               }
             />
             <Route path="*" element={<NotFound />} />
