@@ -445,10 +445,18 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
         <div className="border-t border-border bg-card px-3 py-3">
           <div className="flex items-center gap-2">
             <button className="p-2 text-muted-foreground"><Smile className="h-5 w-5" /></button>
-            <button onClick={() => mediaInputRef.current?.click()} className="p-2 text-muted-foreground">
+            <button onClick={() => mediaInputRef.current?.click()} className="p-2 text-muted-foreground" title="Attach file">
               <Paperclip className="h-5 w-5" />
             </button>
+            <button onClick={() => scanInputRef.current?.click()} className="p-2 text-muted-foreground" title="Scan to PDF (camera)">
+              <ScanLine className="h-5 w-5" />
+            </button>
+            <button onClick={() => docInputRef.current?.click()} className="p-2 text-muted-foreground" title="Images → PDF">
+              <FileText className="h-5 w-5" />
+            </button>
             <input ref={mediaInputRef} type="file" accept="image/*,video/*,.pdf,.doc,.docx" className="hidden" onChange={handleMediaUpload} />
+            <input ref={scanInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScanToPdf} />
+            <input ref={docInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleScanToPdf} />
             <Input
               value={input}
               onChange={e => { setInput(e.target.value); onType(); }}
