@@ -258,6 +258,10 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
               <Tag className="mr-2 h-4 w-4" />
               Manage Labels
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleShowDeleted}>
+              {showDeleted ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
+              {showDeleted ? 'Hide deleted messages' : 'Show deleted messages'}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             {conversation.type !== 'group' && (
               <>
