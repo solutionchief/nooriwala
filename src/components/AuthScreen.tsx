@@ -223,12 +223,6 @@ export default function AuthScreen({ onBack }: AuthScreenProps) {
               maxLength={15}
             />
 
-            <div className="mb-4 flex items-start gap-2 rounded-lg bg-warning/10 p-3">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-              <p className="text-xs text-muted-foreground">
-                <strong className="text-foreground">Important:</strong> Messages on Noori Wala cannot be erased after sending. What you send, stays seen.
-              </p>
-            </div>
 
             <Button onClick={handlePhoneAuth} disabled={phone.length < 6 || loading} className="py-6 text-lg font-bold" size="lg">
               {loading ? 'Sending code...' : 'Send Verification Code'}
@@ -260,12 +254,6 @@ export default function AuthScreen({ onBack }: AuthScreenProps) {
               type="password"
               minLength={6}
             />
-            <div className="mb-4 flex items-start gap-2 rounded-lg bg-warning/10 p-3">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-              <p className="text-xs text-muted-foreground">
-                <strong className="text-foreground">Important:</strong> Messages on Noori Wala cannot be erased after sending. What you send, stays seen.
-              </p>
-            </div>
             <Button
               onClick={isSignUp ? handleEmailSignUp : handleEmailLogin}
               disabled={!email || !password || loading}

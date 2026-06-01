@@ -56,11 +56,11 @@ const App = () => (
             <Route
               path="/app"
               element={
-              <AppLockGate>
-                <TwoFactorGate>
+                <AppLockGate>
+                  {/* 2-step verification is optional at sign-up. It is enforced
+                      only inside sensitive flows (e.g. ChangeNumberScreen). */}
                   <Index />
-                </TwoFactorGate>
-              </AppLockGate>
+                </AppLockGate>
               }
             />
             <Route path="*" element={<NotFound />} />

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Shield, Eye, MessageCircle } from 'lucide-react';
+import { Shield, MessageCircle, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import appIcon from '@/assets/app-icon.png';
 
@@ -9,8 +9,8 @@ interface SplashScreenProps {
 
 const features = [
   { icon: Shield, title: 'Privacy First', desc: 'End-to-end encryption for all messages' },
-  { icon: Eye, title: 'Permanent Messages', desc: 'What you send, stays seen' },
   { icon: MessageCircle, title: 'Instant Messaging', desc: 'Fast, reliable communication' },
+  { icon: Phone, title: 'Voice & Video Calls', desc: 'Crystal-clear HD calls worldwide' },
 ];
 
 export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
