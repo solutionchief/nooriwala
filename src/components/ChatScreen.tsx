@@ -285,7 +285,11 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
         {loading && <p className="text-center text-sm text-muted-foreground">Loading...</p>}
         {messages.map((msg) => {
           const isMine = msg.sender_id === user?.id;
-          const showDeleteNotice = msg.deleted_by_sender && !isMine;
+          // Receiver-side preference: hide the message entirely when the sender
+          // has flagged delete-for-everyone, unless this receiver has opted in
+          // to keep seeing such messages via the chat menu toggle.
+          if (!isMine && msg.deleted_by_sender && !showDeleted) return null;
+          const showDeleteNotice = msg.deleted_by_sender && !isMine && showDeleted;
           const repliedMsg = getReplyContent(msg.reply_to_id);
           const isForwarded = !!(msg as any).forwarded_from_id;
 
@@ -323,7 +327,7 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
                 {showDeleteNotice && (
                   <div className="mb-1 flex items-center gap-1 text-xs text-warning/80">
                     <AlertCircle className="h-3 w-3" />
-                    Sender tried to delete this
+                    Sender tried to delete this — visible because you enabled "Show deleted messages"
                   </div>
                 )}
 
@@ -333,6 +337,10 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
                   <img src={msg.media_url} alt="" className="rounded-lg max-w-full" loading="lazy" />
                 ) : msg.content_type === 'video' && msg.media_url ? (
                   <video src={msg.media_url} controls className="rounded-lg max-w-full" />
+                ) : msg.content_type === 'document' && msg.media_url ? (
+                  <a href={msg.media_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg bg-background/20 px-3 py-2 text-sm hover:underline">
+                    <FileText className="h-4 w-4" /> {msg.content || 'Document'}
+                  </a>
                 ) : (
                   <p className="text-sm leading-relaxed">{msg.content}</p>
                 )}
