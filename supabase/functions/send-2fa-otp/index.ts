@@ -79,6 +79,8 @@ Deno.serve(async (req) => {
     });
     await admin.from("otp_rate_limits").insert({ user_id: user.id, purpose: "two_factor" });
 
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+    let deliveryFailed: string | null = null;
     try {
       await admin.rpc("enqueue_email", {
         p_to: email,
@@ -86,9 +88,18 @@ Deno.serve(async (req) => {
         p_html: `<p>Your 2-step verification code is <b style="font-size:22px;letter-spacing:4px">${code}</b></p><p>It expires in 10 minutes. If you did not request this, ignore this email.</p>`,
         p_purpose: "transactional",
       });
-    } catch (_) {
+    } catch (e) {
+      deliveryFailed = (e as Error).message;
       console.log(`[dev] 2FA OTP for ${email}: ${code}`);
     }
+
+    // Audit log into Security Center
+    await admin.from("security_events").insert({
+      user_id: user.id,
+      event_type: deliveryFailed ? "2fa_otp_send_failed" : "2fa_otp_send_attempt",
+      ip_address: ip,
+      metadata: { email, reason: deliveryFailed ?? "queued_for_delivery" },
+    });
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
