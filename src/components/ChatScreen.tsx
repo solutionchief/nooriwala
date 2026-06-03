@@ -72,14 +72,39 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
   const mediaInputRef = useRef<HTMLInputElement>(null);
   const scanInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
-  const showDeletedKey = `nw-show-deleted-${user?.id}-${conversation.id}`;
-  const [showDeleted, setShowDeleted] = useState<boolean>(() =>
-    typeof window !== 'undefined' && localStorage.getItem(showDeletedKey) === '1'
-  );
-  const toggleShowDeleted = () => {
+  const [showDeleted, setShowDeleted] = useState<boolean>(false);
+  const [scanOpen, setScanOpen] = useState(false);
+
+  // Hydrate show-deleted preference from backend so it follows the user across devices.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('conversation_participants')
+        .select('show_deleted_messages')
+        .eq('conversation_id', conversation.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (!cancelled && data) setShowDeleted(!!data.show_deleted_messages);
+    })();
+    return () => { cancelled = true; };
+  }, [user, conversation.id]);
+
+  const toggleShowDeleted = async () => {
+    if (!user) return;
     const next = !showDeleted;
     setShowDeleted(next);
-    localStorage.setItem(showDeletedKey, next ? '1' : '0');
+    const { error } = await supabase
+      .from('conversation_participants')
+      .update({ show_deleted_messages: next })
+      .eq('conversation_id', conversation.id)
+      .eq('user_id', user.id);
+    if (error) {
+      setShowDeleted(!next);
+      toast.error('Could not save preference');
+      return;
+    }
     toast.success(next ? 'You will see messages even if the sender deletes them' : 'Deleted messages will be hidden');
   };
 
@@ -448,15 +473,12 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
             <button onClick={() => mediaInputRef.current?.click()} className="p-2 text-muted-foreground" title="Attach file">
               <Paperclip className="h-5 w-5" />
             </button>
-            <button onClick={() => scanInputRef.current?.click()} className="p-2 text-muted-foreground" title="Scan to PDF (camera)">
+            <button onClick={() => setScanOpen(true)} className="p-2 text-muted-foreground" title="Scan to PDF">
               <ScanLine className="h-5 w-5" />
             </button>
-            <button onClick={() => docInputRef.current?.click()} className="p-2 text-muted-foreground" title="Images → PDF">
-              <FileText className="h-5 w-5" />
-            </button>
             <input ref={mediaInputRef} type="file" accept="image/*,video/*,.pdf,.doc,.docx" className="hidden" onChange={handleMediaUpload} />
-            <input ref={scanInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScanToPdf} />
-            <input ref={docInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleScanToPdf} />
+            <input ref={scanInputRef} type="file" className="hidden" />
+            <input ref={docInputRef} type="file" className="hidden" />
             <Input
               value={input}
               onChange={e => { setInput(e.target.value); onType(); }}
