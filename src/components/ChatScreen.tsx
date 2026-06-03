@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Send, Paperclip, Smile, MoreVertical, Check, CheckCheck, AlertCircle, Pin, Image, Reply, Forward, Ban, Flag, Clock, X, Users, Tag, WifiOff, Loader2, Phone, Video, ScanLine, FileText, Eye, EyeOff } from 'lucide-react';
 import { imagesToPdf } from '@/lib/scanToPdf';
+import ScanToPdfDialog from '@/components/ScanToPdfDialog';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ChatList';
 import { useMessages, type MessageData } from '@/hooks/useMessages';
@@ -575,6 +576,11 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
           onEnd={() => setActiveCall(null)}
         />
       )}
+      <ScanToPdfDialog
+        open={scanOpen}
+        onOpenChange={setScanOpen}
+        onSend={async (pdf) => { await uploadAndSend(pdf, 'document', pdf.name); }}
+      />
     </div>
   );
 }
