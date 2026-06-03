@@ -555,6 +555,7 @@ export type Database = {
           last_read_at: string | null
           marked_unread: boolean
           role: string
+          show_deleted_messages: boolean
           unread_count: number
           user_id: string
         }
@@ -570,6 +571,7 @@ export type Database = {
           last_read_at?: string | null
           marked_unread?: boolean
           role?: string
+          show_deleted_messages?: boolean
           unread_count?: number
           user_id: string
         }
@@ -585,6 +587,7 @@ export type Database = {
           last_read_at?: string | null
           marked_unread?: boolean
           role?: string
+          show_deleted_messages?: boolean
           unread_count?: number
           user_id?: string
         }
