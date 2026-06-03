@@ -1,1 +1,5 @@
 project_id = "mmtodmbdhlgnifwrysti"
+
+# log-otp-event accepts pre-auth phone-OTP attempts, so JWT cannot be required.
+[functions.log-otp-event]
+verify_jwt = false

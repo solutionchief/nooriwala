@@ -30,6 +30,10 @@ export default function AuthScreen({ onBack }: AuthScreenProps) {
     c.dial.includes(countrySearch)
   );
 
+  const logOtp = async (event_type: string, metadata: Record<string, unknown>) => {
+    try { await supabase.functions.invoke('log-otp-event', { body: { event_type, metadata } }); } catch { /* best-effort */ }
+  };
+
   const handlePhoneAuth = async () => {
     const fullPhone = `${selectedCountry.dial}${phone.replace(/\D/g, '')}`;
     if (phone.length < 6) { toast.error('Enter a valid phone number'); return; }
@@ -42,8 +46,10 @@ export default function AuthScreen({ onBack }: AuthScreenProps) {
       });
       setLoading(false);
       if (error) {
+        await logOtp('phone_otp_send_failed', { phone: fullPhone, reason: error.message });
         toast.error(error.message);
       } else {
+        await logOtp('phone_otp_send_attempt', { phone: fullPhone });
         setOtpSent(true);
         toast.success('Verification code sent!');
       }
@@ -55,7 +61,10 @@ export default function AuthScreen({ onBack }: AuthScreenProps) {
       });
       setLoading(false);
       if (error) {
+        await logOtp('phone_otp_verify_failed', { phone: fullPhone, reason: error.message });
         toast.error(error.message);
+      } else {
+        await logOtp('phone_otp_verify_succeeded', { phone: fullPhone });
       }
     }
   };

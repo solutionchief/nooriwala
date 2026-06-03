@@ -18,6 +18,12 @@ const EVENT_LABELS: Record<string, { label: string; icon: typeof ShieldCheck; to
   '2fa_email_changed': { label: '2-step verification email changed', icon: Mail, tone: 'text-primary' },
   '2fa_challenge_succeeded': { label: 'Successful verification', icon: ShieldCheck, tone: 'text-primary' },
   '2fa_challenge_failed': { label: 'Failed verification attempt', icon: ShieldX, tone: 'text-destructive' },
+  '2fa_otp_send_attempt': { label: 'Gmail 2FA code requested', icon: Mail, tone: 'text-muted-foreground' },
+  '2fa_otp_send_failed': { label: 'Gmail 2FA code delivery failed', icon: ShieldX, tone: 'text-destructive' },
+  'phone_otp_send_attempt': { label: 'Phone OTP requested', icon: KeyRound, tone: 'text-muted-foreground' },
+  'phone_otp_send_failed': { label: 'Phone OTP delivery failed', icon: ShieldX, tone: 'text-destructive' },
+  'phone_otp_verify_failed': { label: 'Phone OTP verification failed', icon: ShieldX, tone: 'text-destructive' },
+  'phone_otp_verify_succeeded': { label: 'Phone OTP verified', icon: ShieldCheck, tone: 'text-primary' },
 };
 
 export default function SecurityCenterScreen({ onBack, onChangeEmail }: { onBack: () => void; onChangeEmail: () => void }) {
