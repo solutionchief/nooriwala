@@ -1233,6 +1233,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_private_profile: {
+        Args: never
+        Returns: {
+          phone: string
+          two_factor_email: string
+          two_factor_enabled: boolean
+        }[]
+      }
       is_community_admin: {
         Args: { _community_id: string; _user_id: string }
         Returns: boolean
