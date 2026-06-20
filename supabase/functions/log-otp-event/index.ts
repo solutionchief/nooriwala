@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
     // For phone OTP attempts the user may not be authenticated yet — accept anonymous too.
     const { data: { user } } = await userClient.auth.getUser();
 
-    const { event_type, metadata, user_id: bodyUserId } = await req.json();
+    const { event_type, metadata } = await req.json();
     if (!event_type || !ALLOWED_EVENTS.has(event_type)) {
       return new Response(JSON.stringify({ error: "invalid event_type" }), {
         status: 400,
@@ -39,9 +39,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    const uid = user?.id ?? bodyUserId ?? null;
+    // Only log events for the authenticated session user. Never trust a
+    // body-supplied user_id — that would let unauthenticated callers forge
+    // security events in any user's audit log.
+    const uid = user?.id ?? null;
     if (!uid) {
-      // No identifiable user; silently accept (anonymous pre-signup) but skip the insert.
+      // Pre-signup / anonymous attempt — silently skip the insert so no audit
+      // record can be attributed to an arbitrary UUID.
       return new Response(JSON.stringify({ ok: true, skipped: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

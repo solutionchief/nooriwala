@@ -15,6 +15,8 @@ export interface Profile {
   show_last_seen: boolean;
   show_read_receipts: boolean;
   show_profile_photo: boolean;
+  two_factor_email: string | null;
+  two_factor_enabled: boolean;
 }
 
 export function useProfile() {
@@ -28,10 +30,18 @@ export function useProfile() {
     const fetch = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, user_id, display_name, avatar_url, cover_url, about, is_online, last_seen, show_last_seen, show_read_receipts, show_profile_photo')
         .eq('user_id', user.id)
         .single();
-      setProfile(data as Profile | null);
+      // phone is column-restricted; fetch via SECURITY DEFINER RPC for self.
+      const { data: priv } = await supabase.rpc('get_my_private_profile');
+      const privRow = Array.isArray(priv) ? priv[0] : priv;
+      setProfile(data ? ({
+        ...(data as any),
+        phone: privRow?.phone ?? null,
+        two_factor_email: privRow?.two_factor_email ?? null,
+        two_factor_enabled: !!privRow?.two_factor_enabled,
+      } as Profile) : null);
       setLoading(false);
     };
     fetch();
@@ -50,9 +60,9 @@ export function useProfile() {
       .from('profiles')
       .update(updates)
       .eq('user_id', user.id)
-      .select()
+      .select('id, user_id, display_name, avatar_url, cover_url, about, is_online, last_seen, show_last_seen, show_read_receipts, show_profile_photo')
       .single();
-    if (data) setProfile(data as Profile);
+    if (data) setProfile(p => p ? ({ ...p, ...(data as any) } as Profile) : (data as any));
   };
 
   const uploadAvatar = async (file: File) => {
