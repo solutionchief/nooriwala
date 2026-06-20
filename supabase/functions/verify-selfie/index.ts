@@ -35,6 +35,14 @@ Deno.serve(async (req) => {
     if (!selfie_data_url || !verification_id) {
       return new Response(JSON.stringify({ error: "missing fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    // Reject anything that isn't a data:image/... URL or that exceeds ~1.5 MB
+    // (base64) to prevent memory exhaustion + AI cost amplification attacks.
+    if (typeof selfie_data_url !== "string" || !/^data:image\/(jpeg|jpg|png|webp);base64,/i.test(selfie_data_url)) {
+      return new Response(JSON.stringify({ error: "Invalid image format" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (selfie_data_url.length > 1_500_000) {
+      return new Response(JSON.stringify({ error: "Image too large (max ~1 MB)" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const { data: profile } = await admin.from("profiles").select("avatar_url").eq("user_id", user.id).maybeSingle();
     if (!profile?.avatar_url) {
