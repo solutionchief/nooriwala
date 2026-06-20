@@ -15,6 +15,8 @@ export interface Profile {
   show_last_seen: boolean;
   show_read_receipts: boolean;
   show_profile_photo: boolean;
+  two_factor_email: string | null;
+  two_factor_enabled: boolean;
 }
 
 export function useProfile() {
