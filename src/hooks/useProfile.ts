@@ -28,10 +28,13 @@ export function useProfile() {
     const fetch = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, user_id, display_name, avatar_url, cover_url, about, is_online, last_seen, show_last_seen, show_read_receipts, show_profile_photo')
         .eq('user_id', user.id)
         .single();
-      setProfile(data as Profile | null);
+      // phone is column-restricted; fetch via SECURITY DEFINER RPC for self.
+      const { data: priv } = await supabase.rpc('get_my_private_profile');
+      const privRow = Array.isArray(priv) ? priv[0] : priv;
+      setProfile(data ? ({ ...(data as any), phone: privRow?.phone ?? null } as Profile) : null);
       setLoading(false);
     };
     fetch();
