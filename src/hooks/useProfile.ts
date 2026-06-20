@@ -60,9 +60,9 @@ export function useProfile() {
       .from('profiles')
       .update(updates)
       .eq('user_id', user.id)
-      .select()
+      .select('id, user_id, display_name, avatar_url, cover_url, about, is_online, last_seen, show_last_seen, show_read_receipts, show_profile_photo')
       .single();
-    if (data) setProfile(data as Profile);
+    if (data) setProfile(p => p ? ({ ...p, ...(data as any) } as Profile) : (data as any));
   };
 
   const uploadAvatar = async (file: File) => {
