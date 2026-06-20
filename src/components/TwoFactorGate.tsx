@@ -33,16 +33,13 @@ export default function TwoFactorGate({ children }: { children: React.ReactNode 
     if (!isAuthenticated || !user) { setChecking(false); return; }
     if (passed) { setChecking(false); return; }
     (async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('two_factor_enabled, two_factor_email')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const { data: priv } = await supabase.rpc('get_my_private_profile');
+      const row = Array.isArray(priv) ? priv[0] : priv;
       setProfile({
-        two_factor_enabled: !!data?.two_factor_enabled,
-        two_factor_email: data?.two_factor_email ?? null,
+        two_factor_enabled: !!row?.two_factor_enabled,
+        two_factor_email: row?.two_factor_email ?? null,
       });
-      if (data?.two_factor_email) setEmail(data.two_factor_email);
+      if (row?.two_factor_email) setEmail(row.two_factor_email);
       setChecking(false);
     })();
   }, [isAuthenticated, user, passed]);
