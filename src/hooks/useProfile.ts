@@ -36,7 +36,12 @@ export function useProfile() {
       // phone is column-restricted; fetch via SECURITY DEFINER RPC for self.
       const { data: priv } = await supabase.rpc('get_my_private_profile');
       const privRow = Array.isArray(priv) ? priv[0] : priv;
-      setProfile(data ? ({ ...(data as any), phone: privRow?.phone ?? null } as Profile) : null);
+      setProfile(data ? ({
+        ...(data as any),
+        phone: privRow?.phone ?? null,
+        two_factor_email: privRow?.two_factor_email ?? null,
+        two_factor_enabled: !!privRow?.two_factor_enabled,
+      } as Profile) : null);
       setLoading(false);
     };
     fetch();
