@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Eye, X, Camera, Type, Trash2 } from 'lucide-react';
+import { Plus, Eye, X, Camera, Type, Trash2, Send } from 'lucide-react';
 import { Avatar } from '@/components/ChatList';
 import { useStatuses, type StatusData } from '@/hooks/useStatuses';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +8,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const bgColors = [
@@ -30,6 +31,8 @@ export default function StatusScreen() {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [viewingStatus, setViewingStatus] = useState<StatusData | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replying, setReplying] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
