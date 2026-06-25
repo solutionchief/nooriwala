@@ -1,5 +1,9 @@
 import { ArrowLeft, MessageCircle, Heart, Shield, Code, Globe } from 'lucide-react';
 
+const APP_VERSION = '1.0.0';
+const BUILD_DATE = new Date(import.meta.env.VITE_BUILD_TIME || Date.now()).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+
+
 export default function AboutScreen({ onBack }: { onBack: () => void }) {
   return (
     <div className="flex h-full flex-col bg-background">
