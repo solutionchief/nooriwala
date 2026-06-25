@@ -70,10 +70,64 @@ export default function StatusScreen() {
     viewStatus(status.id);
   };
 
+  // Reply to a status by DM'ing the author with a quoted preview
+  const sendStatusReply = async () => {
+    if (!viewingStatus || !user || !replyText.trim()) return;
+    setReplying(true);
+    try {
+      // Find or create direct conversation
+      const { data: myParts } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', user.id);
+      const myConvIds = (myParts || []).map(p => p.conversation_id);
+      let convId: string | null = null;
+      if (myConvIds.length) {
+        const { data: shared } = await supabase
+          .from('conversation_participants')
+          .select('conversation_id')
+          .eq('user_id', viewingStatus.user_id)
+          .in('conversation_id', myConvIds);
+        const { data: convs } = shared && shared.length
+          ? await supabase.from('conversations').select('id').eq('type', 'direct').in('id', shared.map(s => s.conversation_id))
+          : { data: [] as any };
+        convId = convs?.[0]?.id ?? null;
+      }
+      if (!convId) {
+        const { data: conv, error } = await supabase
+          .from('conversations').insert({ type: 'direct', created_by: user.id }).select().single();
+        if (error || !conv) throw error || new Error('Could not start chat');
+        await supabase.from('conversation_participants').insert([
+          { conversation_id: conv.id, user_id: user.id },
+          { conversation_id: conv.id, user_id: viewingStatus.user_id },
+        ]);
+        convId = conv.id;
+      }
+      const quote = viewingStatus.content_type === 'text'
+        ? `> ${(viewingStatus.content || '').slice(0, 120)}\n\n`
+        : `> [${viewingStatus.content_type} status]\n\n`;
+      await supabase.from('messages').insert({
+        conversation_id: convId,
+        sender_id: user.id,
+        content: quote + replyText.trim(),
+        content_type: 'text',
+        status: 'sent',
+      });
+      toast.success('Reply sent');
+      setReplyText('');
+      setViewingStatus(null);
+    } catch (e: any) {
+      toast.error(e.message || 'Could not send reply');
+    } finally {
+      setReplying(false);
+    }
+  };
+
   // Viewing a status fullscreen
   if (viewingStatus) {
+    const isOwn = viewingStatus.user_id === user?.id;
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-black" onClick={() => setViewingStatus(null)}>
+      <div className="fixed inset-0 z-50 flex flex-col bg-black">
         <div className="flex items-center gap-3 p-4">
           <button onClick={() => setViewingStatus(null)} className="text-white"><X className="h-6 w-6" /></button>
           <Avatar name={viewingStatus.user_display_name} avatarUrl={viewingStatus.user_avatar_url} size="sm" />
@@ -91,10 +145,29 @@ export default function StatusScreen() {
             <video src={viewingStatus.media_url!} controls className="max-h-full max-w-full rounded-xl" />
           )}
         </div>
-        <div className="flex items-center gap-2 p-4 text-white/60">
+        <div className="flex items-center gap-2 px-4 py-2 text-white/60">
           <Eye className="h-4 w-4" />
           <span className="text-sm">{viewingStatus.viewer_count} views</span>
         </div>
+        {!isOwn && (
+          <div className="border-t border-white/10 bg-black/80 p-3 flex items-center gap-2">
+            <Input
+              value={replyText}
+              onChange={e => setReplyText(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendStatusReply()}
+              placeholder={`Reply to ${viewingStatus.user_display_name}…`}
+              className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+            />
+            <button
+              onClick={sendStatusReply}
+              disabled={!replyText.trim() || replying}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-40"
+              aria-label="Send reply"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          </div>
+        )}
       </div>
     );
   }
