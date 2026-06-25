@@ -33,6 +33,7 @@ import { useLabels } from '@/hooks/useLabels';
 import { usePendingOutbox } from '@/hooks/useOnlineStatus';
 import { useCalls } from '@/hooks/useCalls';
 import CallScreen from '@/components/CallScreen';
+import GroupInfoScreen from '@/components/GroupInfoScreen';
 
 interface ChatScreenProps {
   conversation: ConversationWithDetails;
@@ -75,6 +76,7 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
   const docInputRef = useRef<HTMLInputElement>(null);
   const [showDeleted, setShowDeleted] = useState<boolean>(false);
   const [scanOpen, setScanOpen] = useState(false);
+  const [showGroupInfo, setShowGroupInfo] = useState(false);
 
   // Hydrate show-deleted preference from backend so it follows the user across devices.
   useEffect(() => {
@@ -212,6 +214,16 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
     return messages.find(m => m.id === replyToId);
   };
 
+  if (showGroupInfo && conversation.type === 'group') {
+    return (
+      <GroupInfoScreen
+        conversation={conversation}
+        onBack={() => setShowGroupInfo(false)}
+        onLeft={onBack}
+      />
+    );
+  }
+
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Header */}
@@ -219,17 +231,23 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
         <button onClick={onBack} className="text-muted-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <Avatar name={displayName} isOnline={conversation.participant_online} avatarUrl={conversation.type === 'group' ? conversation.avatar_url : conversation.participant_avatar} />
-        <div className="flex-1">
-          <div className="flex items-center gap-1.5">
-            <p className="font-semibold text-foreground">{displayName}</p>
-            {conversation.is_pinned && <Pin className="h-3 w-3 text-primary rotate-45" />}
-            {conversation.type === 'group' && <Users className="h-3 w-3 text-muted-foreground" />}
+        <button
+          onClick={() => conversation.type === 'group' && setShowGroupInfo(true)}
+          className="flex flex-1 items-center gap-3 text-left"
+          aria-label={conversation.type === 'group' ? 'Open group info' : 'Profile'}
+        >
+          <Avatar name={displayName} isOnline={conversation.participant_online} avatarUrl={conversation.type === 'group' ? conversation.avatar_url : conversation.participant_avatar} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="font-semibold text-foreground truncate">{displayName}</p>
+              {conversation.is_pinned && <Pin className="h-3 w-3 text-primary rotate-45" />}
+              {conversation.type === 'group' && <Users className="h-3 w-3 text-muted-foreground" />}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {typingUsers.length > 0 ? 'typing...' : onlineText}
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {typingUsers.length > 0 ? 'typing...' : onlineText}
-          </p>
-        </div>
+        </button>
         {conversation.type !== 'group' && (
           <>
             <button
@@ -263,6 +281,11 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
             <button className="p-2 text-muted-foreground"><MoreVertical className="h-5 w-5" /></button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {conversation.type === 'group' && (
+              <DropdownMenuItem onClick={() => setShowGroupInfo(true)}>
+                <Users className="mr-2 h-4 w-4" /> Group info
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => onTogglePin(conversation.id)}>
               <Pin className="mr-2 h-4 w-4" />
               {conversation.is_pinned ? 'Unpin Chat' : 'Pin Chat'}
