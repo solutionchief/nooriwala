@@ -1,5 +1,9 @@
 import { ArrowLeft, MessageCircle, Heart, Shield, Code, Globe } from 'lucide-react';
 
+const APP_VERSION = '1.0.0';
+const BUILD_DATE = new Date(import.meta.env.VITE_BUILD_TIME || Date.now()).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+
+
 export default function AboutScreen({ onBack }: { onBack: () => void }) {
   return (
     <div className="flex h-full flex-col bg-background">
@@ -13,7 +17,9 @@ export default function AboutScreen({ onBack }: { onBack: () => void }) {
             <MessageCircle className="h-10 w-10 text-primary-foreground" />
           </div>
           <h2 className="text-2xl font-extrabold">Noori Wala</h2>
-          <p className="text-sm text-muted-foreground">Version 1.0.0 (build 100)</p>
+          <p className="text-sm text-muted-foreground">
+            Version {APP_VERSION} · Built {BUILD_DATE}
+          </p>
           <p className="mt-2 italic text-sm text-primary">Say it once. It stays.</p>
         </div>
 
