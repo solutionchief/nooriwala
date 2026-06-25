@@ -3,7 +3,7 @@ import { useStarred } from '@/hooks/useStarred';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar } from '@/components/ChatList';
 
-export default function StarredMessagesScreen({ onBack }: { onBack: () => void }) {
+export default function StarredMessagesScreen({ onBack, onOpenConversation }: { onBack: () => void; onOpenConversation?: (conversationId: string) => void }) {
   const { items, loading, toggleStar } = useStarred();
 
   return (
@@ -29,7 +29,7 @@ export default function StarredMessagesScreen({ onBack }: { onBack: () => void }
         ) : (
           <ul className="divide-y divide-border">
             {items.map(it => (
-              <li key={it.id} className="flex gap-3 px-4 py-3">
+              <li key={it.id} className="flex gap-3 px-4 py-3 hover:bg-secondary/40 cursor-pointer" onClick={() => onOpenConversation?.(it.conversation_id)}>
                 <Avatar name={it.sender_name} avatarUrl={it.sender_avatar} size="sm" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
@@ -45,7 +45,7 @@ export default function StarredMessagesScreen({ onBack }: { onBack: () => void }
                     {it.content_type === 'text' && (it.content || '')}
                   </div>
                 </div>
-                <button onClick={() => toggleStar(it.message_id, it.conversation_id)} className="self-start">
+                <button onClick={(e) => { e.stopPropagation(); toggleStar(it.message_id, it.conversation_id); }} className="self-start" aria-label="Unstar">
                   <Star className="h-5 w-5 fill-primary text-primary" />
                 </button>
               </li>

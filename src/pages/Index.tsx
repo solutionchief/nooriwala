@@ -231,7 +231,14 @@ export default function Index() {
     /></div>{incomingOverlay}</>);
   }
   if (showStarred) {
-    return (<><div className="mx-auto h-screen max-w-lg"><StarredMessagesScreen onBack={() => setShowStarred(false)} /></div>{incomingOverlay}</>);
+    return (<><div className="mx-auto h-screen max-w-lg"><StarredMessagesScreen
+      onBack={() => setShowStarred(false)}
+      onOpenConversation={(convId) => {
+        const conv = conversations.find(c => c.id === convId);
+        if (conv) { setShowStarred(false); setActiveChat(conv); }
+        else toast.error('Conversation not found');
+      }}
+    /></div>{incomingOverlay}</>);
   }
   if (showLinked) {
     return (<><div className="mx-auto h-screen max-w-lg"><LinkedDevicesScreen onBack={() => setShowLinked(false)} /></div>{incomingOverlay}</>);
