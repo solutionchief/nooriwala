@@ -25,10 +25,10 @@ export default function HelpScreen({ onBack }: { onBack: () => void }) {
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         <div className="rounded-xl bg-card overflow-hidden divide-y divide-border">
-          <Row icon={Mail} label="Contact support" value="support@nooriwalar.app"
-               onClick={() => window.location.href = 'mailto:support@nooriwalar.app?subject=Chief%20Messenger%20Support'} />
-          <Row icon={Bug} label="Report a problem" value="bugs@nooriwalar.app"
-               onClick={() => window.location.href = 'mailto:bugs@nooriwalar.app?subject=Bug%20report'} />
+          <Row icon={Mail} label="Contact support" value="support@nooriwala.app"
+               onClick={() => window.location.href = 'mailto:support@nooriwala.app?subject=Noori%20Wala%20Support'} />
+          <Row icon={Bug} label="Report a problem" value="bugs@nooriwala.app"
+               onClick={() => window.location.href = 'mailto:bugs@nooriwala.app?subject=Bug%20report'} />
           <Row icon={MessageCircle} label="Community"
                onClick={() => window.open('https://nooriwala.lovable.app', '_blank')} />
         </div>
