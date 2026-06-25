@@ -281,6 +281,11 @@ export default function ChatScreen({ conversation, onBack, onTogglePin, onSetThe
             <button className="p-2 text-muted-foreground"><MoreVertical className="h-5 w-5" /></button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {conversation.type === 'group' && (
+              <DropdownMenuItem onClick={() => setShowGroupInfo(true)}>
+                <Users className="mr-2 h-4 w-4" /> Group info
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => onTogglePin(conversation.id)}>
               <Pin className="mr-2 h-4 w-4" />
               {conversation.is_pinned ? 'Unpin Chat' : 'Pin Chat'}
